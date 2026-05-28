@@ -197,7 +197,9 @@ export function RadialOrbitalTimeline({
               className="absolute w-24 h-24 rounded-full border border-white/10 animate-ping opacity-50"
               style={{ animationDelay: "0.5s" }}
             ></div>
-            <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-md"></div>
+            <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-[inset_0_0_10px_rgba(255,255,255,0.2)]">
+              <span className="text-white font-black text-2xl drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">K</span>
+            </div>
           </div>
 
           <div className="absolute w-96 h-96 rounded-full border border-white/10"></div>
@@ -271,15 +273,15 @@ export function RadialOrbitalTimeline({
                   absolute top-8 whitespace-nowrap
                   text-xs font-semibold tracking-wider
                   transition-all duration-300
-                  ${isExpanded ? "text-white scale-125" : "text-white/70"}
+                  ${isExpanded ? "opacity-0 scale-50 pointer-events-none" : "text-white/70 opacity-100"}
                 `}
                 >
                   {item.title}
                 </div>
 
                 {isExpanded && (
-                  <Card className="absolute top-20 left-1/2 -translate-x-1/2 w-64 bg-zinc-950/95 backdrop-blur-lg border-white/20 shadow-2xl shadow-indigo-500/10 overflow-visible z-50">
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-px h-3 bg-white/50"></div>
+                  <Card className="absolute top-[52px] left-1/2 -translate-x-1/2 w-64 bg-zinc-950/95 backdrop-blur-lg border-white/20 shadow-2xl shadow-indigo-500/10 overflow-visible z-50">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-px h-[32px] bg-gradient-to-b from-transparent to-white/50"></div>
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-center">
                         <Badge

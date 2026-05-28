@@ -134,14 +134,15 @@ export function Notepad3D({ externalOpen }: { externalOpen?: boolean }) {
             <span className="text-indigo-900/40 text-8xl font-black -rotate-90">K</span>
           </div>
           
-          {/* Bindings (Rings) */}
-          <div className="absolute left-1 inset-y-0 w-8 flex flex-col justify-evenly py-6" style={{ transform: "translateZ(2px)" }}>
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="flex gap-1 items-center -ml-4">
-                <div className="w-6 h-2.5 bg-gradient-to-b from-zinc-300 to-zinc-500 rounded-full shadow-md border border-zinc-400"></div>
-              </div>
-            ))}
-          </div>
+        </div>
+
+        {/* Bindings (Rings) - Moved to center depth to fix parallax misalignment */}
+        <div className="absolute -left-2 inset-y-0 w-8 flex flex-col justify-evenly py-6 pointer-events-none" style={{ transform: "translateZ(-10px)" }}>
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex gap-1 items-center">
+              <div className="w-8 h-3 bg-gradient-to-b from-zinc-300 to-zinc-500 rounded-full shadow-lg border border-zinc-400"></div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
