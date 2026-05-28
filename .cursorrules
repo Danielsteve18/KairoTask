@@ -1,0 +1,45 @@
+# 🤖 KairoTask - Reglas del Agente (System Prompt Adicional)
+
+Este documento contiene el contexto vital, reglas, herramientas y estructura de KairoTask.
+**DEBES LEER ESTE ARCHIVO Y TENERLO EN CUENTA EN CADA INTERACCIÓN PARA NO DESVIARTE DE LA ARQUITECTURA DEL PROYECTO.**
+
+## 📌 1. Identidad y Propósito del Proyecto
+- **Nombre:** KairoTask
+- **Objetivo:** Plataforma colaborativa para gestión ágil de proyectos y tareas universitarios/equipos.
+- **Enfoque Visual:** Dev-centric, uso de ASCII Art, animaciones 3D, UI limpia pero poderosa.
+
+## 🛠️ 2. Stack Tecnológico (Estricto)
+- **Frontend Core:** Next.js 15 (App Router), TypeScript estricto.
+- **UI & Estilos:** Tailwind CSS, NextUI / Base UI.
+- **Animaciones:** GSAP (Drag & Drop, transiciones de página). Framer Motion (si el componente de 21st.dev lo requiere).
+- **Backend & Auth:** Supabase (PostgreSQL, Realtime, Storage, Auth).
+- **Notificaciones:** BillionMail + Nodemailer.
+- **PWA:** `@ducanh2912/next-pwa`.
+- **QA & Testing:** Playwright (E2E Frontend), Postman (API), TestRail.
+
+## 📏 3. Reglas de Diseño UI/UX
+- **Responsive (4 Breakpoints):** Mobile (<576px), Tablet (768-992px), Desktop (992-1200px), XL (>1200px).
+- **Favicons Dinámicos:** Animados SOLO para procesos activos (loading, notificaciones).
+- **Rendimiento:** Arte ASCII (ASCII Studio) y modelos 3D (simpleParallax, LumaLabs) deben limitarse a la Landing Page, About, o Error 404 para no penalizar el rendimiento del Kanban o dashboard.
+
+## 🧠 4. Habilidades y Herramientas a Usar SIEMPRE
+1. **ui-ux-pro-max (`.agents/skills/ui-ux-pro-max/`):** 
+   - ÚSALO para tomar decisiones de diseño, generar el Design System base (paletas, tipografías, variables).
+2. **21st.dev (Componentes de la comunidad):** 
+   - Cuando el usuario requiera bloques visuales complejos (Heroes, Navbars, Pricing, Bento Grids), aconséjale u ofrécele buscar en `21st.dev/community/components`. 
+   - Toma el código de esos componentes y adáptalo inyectando los colores y tipografías del Design System de `ui-ux-pro-max`.
+
+## 🔄 5. Flujo de Trabajo y Git
+- Usa **`pnpm`** siempre (`pnpm install`, `pnpm dev`, `pnpm dlx`). NUNCA `npm` o `yarn` para instalar paquetes.
+- **Ramas:** La rama `main` está protegida. Trabaja en `feature/nombre-funcionalidad` o `fix/nombre-error`.
+- **Commits:** Usa Conventional Commits (`feat:`, `fix:`, `refactor:`, `style:`).
+
+## 📂 6. Estructura de Carpetas (No la rompas)
+- `src/app/`: Rutas de Next.js App Router (ej. `(auth)`, `dashboard`).
+- `src/components/`: ui, layout, project, task, notifications.
+- `src/lib/`: supabaseClient, supabaseServer, utils.
+- `src/hooks/`, `src/services/`, `src/types/`.
+
+### 🚨 RECORDATORIO CRÍTICO PARA EL AGENTE:
+- Respeta siempre la arquitectura. No inventes dependencias nuevas innecesarias.
+- Aplica el flujo `ui-ux-pro-max` + `21st.dev` para acelerar el desarrollo frontend con alta calidad.
