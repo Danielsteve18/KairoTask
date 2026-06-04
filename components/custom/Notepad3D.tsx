@@ -16,9 +16,17 @@ export function Notepad3D({ externalOpen }: { externalOpen?: boolean }) {
 
   return (
     <div
-      className="relative group cursor-pointer w-72 h-96 flex items-center justify-center"
+      className="relative group cursor-pointer w-72 h-96 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-2xl"
       style={{ perspective: "1200px" }}
       onClick={() => setIsOpen(!isOpen)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          setIsOpen(!isOpen);
+        }
+      }}
+      tabIndex={0}
+      role="button"
       onMouseEnter={() => !isOpen && setIsOpen(true)}
       onMouseLeave={() => isOpen && setIsOpen(false)}
     >
@@ -33,35 +41,35 @@ export function Notepad3D({ externalOpen }: { externalOpen?: boolean }) {
       >
         {/* Back Cover */}
         <div
-          className="absolute inset-0 bg-zinc-900 rounded-r-2xl rounded-l-lg shadow-2xl"
+          className="absolute inset-0 bg-card rounded-r-2xl rounded-l-lg shadow-2xl border border-border"
           style={{ transform: "translateZ(-20px)" }}
         >
           {/* Ring Binder Spine */}
-          <div className="absolute left-0 inset-y-0 w-6 bg-zinc-950 rounded-l-lg border-r border-zinc-800"></div>
+          <div className="absolute left-0 inset-y-0 w-6 bg-muted rounded-l-lg border-r border-border"></div>
         </div>
 
         {/* Pages layer 3 */}
         <div
-          className="absolute inset-y-1 right-1 left-3 bg-zinc-200 rounded-r-xl border border-zinc-300"
+          className="absolute inset-y-1 right-1 left-3 bg-card rounded-r-xl border border-border opacity-70"
           style={{ transform: "translateZ(-15px)" }}
         ></div>
         
         {/* Pages layer 2 */}
         <div
-          className="absolute inset-y-2 right-2 left-3 bg-zinc-100 rounded-r-xl border border-zinc-200"
+          className="absolute inset-y-2 right-2 left-3 bg-card rounded-r-xl border border-border opacity-90"
           style={{ transform: "translateZ(-10px)" }}
         ></div>
 
         {/* Top Page (Content) */}
         <div
-          className="absolute inset-y-3 right-3 left-4 bg-white rounded-r-xl border border-zinc-200 shadow-sm flex flex-col p-5 overflow-hidden"
+          className="absolute inset-y-3 right-3 left-4 bg-background rounded-r-xl border border-border shadow-sm flex flex-col p-5 overflow-hidden text-foreground"
           style={{ transform: "translateZ(-5px)" }}
         >
-          <div className="flex items-center justify-between mb-5 pb-3 border-b-2 border-dashed border-zinc-200">
-            <span className="text-zinc-500 font-semibold flex items-center gap-2 text-sm">
+          <div className="flex items-center justify-between mb-5 pb-3 border-b-2 border-dashed border-border">
+            <span className="text-muted-foreground font-semibold flex items-center gap-2 text-sm">
               <Clock size={16} /> Today
             </span>
-            <Edit2 size={16} className="text-zinc-300" />
+            <Edit2 size={16} className="text-muted-foreground opacity-50" />
           </div>
           <div className="space-y-4 flex-1">
             {/* Task 1 */}
@@ -101,7 +109,7 @@ export function Notepad3D({ externalOpen }: { externalOpen?: boolean }) {
 
         {/* Front Cover */}
         <div
-          className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-violet-900 rounded-r-2xl rounded-l-lg shadow-xl origin-left transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] flex flex-col items-center justify-center text-white border-l-4 border-indigo-950/50"
+          className="absolute inset-0 bg-primary text-primary-foreground rounded-r-2xl rounded-l-lg shadow-xl origin-left transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] flex flex-col items-center justify-center border-l-4 border-black/20"
           style={{
             transform: isOpen ? "rotateY(-120deg)" : "rotateY(0deg)",
             transformStyle: "preserve-3d",
@@ -112,26 +120,26 @@ export function Notepad3D({ externalOpen }: { externalOpen?: boolean }) {
             className="flex flex-col items-center justify-center w-full h-full p-6"
             style={{ backfaceVisibility: "hidden", transform: "translateZ(1px)" }}
           >
-            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md mb-6 shadow-inner border border-white/20">
-              <Clock size={32} className="text-white drop-shadow-lg" />
+            <div className="w-16 h-16 bg-black/10 rounded-2xl flex items-center justify-center backdrop-blur-md mb-6 shadow-inner border border-white/10">
+              <Clock size={32} className="text-primary-foreground drop-shadow-sm" />
             </div>
-            <h3 className="font-bold text-3xl tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70 drop-shadow-sm mb-2">
+            <h3 className="font-bold text-3xl tracking-tight text-primary-foreground mb-2">
               KairoTask
             </h3>
-            <p className="text-indigo-200 text-sm font-medium tracking-wide uppercase">
+            <p className="text-primary-foreground/70 text-sm font-medium tracking-wide uppercase">
               Master Your Time
             </p>
           </div>
 
           {/* Front Cover Backface (Inside of cover) */}
           <div 
-            className="absolute inset-0 bg-indigo-950 rounded-r-2xl rounded-l-lg border-r border-indigo-900 flex items-center justify-center opacity-0 transition-opacity duration-300"
+            className="absolute inset-0 bg-secondary rounded-r-2xl rounded-l-lg border-r border-border flex items-center justify-center opacity-0 transition-opacity duration-300"
             style={{ 
               transform: "rotateY(180deg) translateZ(1px)",
               opacity: isOpen ? 1 : 0 // Custom backface logic to avoid flicker in some browsers
             }}
           >
-            <span className="text-indigo-900/40 text-8xl font-black -rotate-90">K</span>
+            <span className="text-secondary-foreground/20 text-8xl font-black -rotate-90">K</span>
           </div>
           
         </div>
