@@ -1,11 +1,16 @@
 "use client";
 
 import { RadialOrbitalTimeline, TimelineItem } from "@/components/custom/RadialOrbitalTimeline";
-import { Kanban, Timer, Users, Activity, Bell, Terminal, ChevronRight } from "lucide-react";
+import { Kanban, Timer, Users, Activity, Bell, Terminal, ChevronRight, Github } from "lucide-react";
 import Link from "next/link";
 import { Notepad3D } from "@/components/custom/Notepad3D";
 import { ThemeToggle } from "@/components/custom/ThemeToggle";
+import { BentoFeatures } from "@/components/custom/BentoFeatures";
+import { TechStack } from "@/components/custom/TechStack";
+import { TeamSection } from "@/components/custom/TeamSection";
 import { motion } from "framer-motion";
+import { SnakeGridBackground } from "@/components/custom/SnakeGridBackground";
+
 
 const kairoTimelineData: TimelineItem[] = [
 // ... [kept to not mess with lines, wait I only need to replace the import and the header part]
@@ -96,15 +101,12 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden border-b border-border">
-        {/* Subtle background gradient / grid to prevent complete flatness */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-primary/5 via-background to-background pointer-events-none" />
-        <div 
-          className="absolute inset-0 opacity-[0.03] pointer-events-none"
-          style={{
-            backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`,
-            backgroundSize: '32px 32px',
-          }}
-        />
+        {/* Dynamic Snake Grid Background (Self-playing Retro Snake & Tetris blocks) */}
+        <div className="absolute inset-0 opacity-[0.4] dark:opacity-[0.7] pointer-events-none">
+          <SnakeGridBackground />
+        </div>
+        {/* Fade bottom for section transition */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
 
         <div className="container mx-auto px-6 md:px-12 flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
           
@@ -184,22 +186,84 @@ export default function Home() {
       </section>
 
       {/* Ecosystem Section */}
-      <section id="ecosystem" className="py-24 bg-card/20">
+      <section id="ecosystem" className="py-24 md:py-36 bg-secondary/20 border-y border-border">
         <div className="container mx-auto px-6 md:px-12 flex flex-col items-center">
-          <div className="text-center mb-16 max-w-3xl mx-auto space-y-4">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="text-center mb-16 max-w-3xl mx-auto"
+          >
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight text-foreground mb-4">
               El Ecosistema KairoTask
             </h2>
-            <p className="text-lg text-muted-foreground">
-              Explora las herramientas diseñadas para elevar tu productividad. Navega por nuestro ecosistema orbital y descubre cómo encaja todo.
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              Navega por el ecosistema orbital. Cada nodo conecta una herramienta diseñada para eliminar el caos y mantener a tu equipo en el flow.
             </p>
-          </div>
+          </motion.div>
           
-          <div className="w-full max-w-5xl h-[70vh] rounded-3xl overflow-hidden border border-border bg-card/50 backdrop-blur-md shadow-sm relative">
+          <div className="w-full max-w-5xl h-[70vh] rounded-2xl overflow-hidden border border-border bg-card/50 shadow-sm relative">
             <RadialOrbitalTimeline timelineData={kairoTimelineData} />
           </div>
         </div>
       </section>
+
+      {/* Features Bento Grid */}
+      <BentoFeatures />
+
+      {/* Tech Stack Marquee */}
+      <TechStack />
+
+      {/* Team Section */}
+      <TeamSection />
+
+      {/* Footer */}
+      <footer className="py-16 md:py-24 border-t border-border bg-card relative z-10 text-muted-foreground">
+        <div className="container mx-auto px-6 md:px-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
+            <div className="md:col-span-2">
+              <div className="font-black text-2xl tracking-tighter text-foreground mb-4">KairoTask</div>
+              <p className="max-w-sm mb-6 leading-relaxed">
+                Gestión ágil para equipos modernos. Domina tu tiempo, mide tu energía y mantén a tu equipo sincronizado en modo zen.
+              </p>
+              <div className="flex gap-4">
+                <a href="#" className="w-10 h-10 rounded-full border border-border bg-background flex items-center justify-center hover:bg-secondary hover:text-foreground transition-colors">
+                  <Github className="w-5 h-5" />
+                </a>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-bold text-foreground mb-4">Producto</h4>
+              <ul className="space-y-3">
+                <li><Link href="#features" className="hover:text-foreground transition-colors">Características</Link></li>
+                <li><Link href="#ecosystem" className="hover:text-foreground transition-colors">Ecosistema</Link></li>
+                <li><Link href="/login" className="hover:text-foreground transition-colors">Ingresar</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-foreground mb-4">Proyecto</h4>
+              <ul className="space-y-3">
+                <li><a href="#" className="hover:text-foreground transition-colors">Universidad Del Pacífico</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Documentación</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Código Fuente</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-foreground">KairoTask</span>
+              <span>© {new Date().getFullYear()}</span>
+            </div>
+            <p>
+              Creado con 💻 y ☕ por el equipo UDP.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
