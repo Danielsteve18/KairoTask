@@ -17,6 +17,23 @@ export interface TimelineItem {
   energy: number;
 }
 
+const calculateNodePosition = (index: number, total: number, rotationAngle: number, centerOffset: { x: number; y: number }) => {
+  const angle = ((index / total) * 360 + rotationAngle) % 360;
+  const radius = 192; // Match w-96 (384px) radius exactly
+  const radian = (angle * Math.PI) / 180;
+
+  const x = Number((radius * Math.cos(radian) + centerOffset.x).toFixed(2));
+  const y = Number((radius * Math.sin(radian) + centerOffset.y).toFixed(2));
+
+  const zIndex = Math.round(100 + 50 * Math.cos(radian));
+  const opacity = Number(Math.max(
+    0.4,
+    Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2))
+  ).toFixed(3));
+
+  return { x, y, angle, zIndex, opacity };
+};
+
 interface RadialOrbitalTimelineProps {
   timelineData: TimelineItem[];
 }
@@ -82,12 +99,12 @@ export function RadialOrbitalTimeline({
     });
   };
 
-  const [isVisible, setIsVisible] = useState(true);
+  const isVisible = useRef(true);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsVisible(entry.isIntersecting);
+        isVisible.current = entry.isIntersecting;
       },
       { threshold: 0.1 }
     );
@@ -105,7 +122,7 @@ export function RadialOrbitalTimeline({
     let animationFrameId: number;
 
     const animate = () => {
-      if (autoRotate && viewMode === "orbital" && isVisible) {
+      if (autoRotate && viewMode === "orbital" && isVisible.current) {
         setRotationAngle((prev) => {
           const newAngle = (prev + 0.08) % 360;
           return Number(newAngle.toFixed(3));
@@ -114,7 +131,7 @@ export function RadialOrbitalTimeline({
       }
     };
 
-    if (autoRotate && viewMode === "orbital" && isVisible) {
+    if (autoRotate && viewMode === "orbital" && isVisible.current) {
       animationFrameId = requestAnimationFrame(animate);
     }
 
@@ -123,7 +140,7 @@ export function RadialOrbitalTimeline({
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [autoRotate, viewMode, isVisible]);
+  }, [autoRotate, viewMode]);
 
   const centerViewOnNode = (nodeId: number) => {
     if (viewMode !== "orbital" || !nodeRefs.current[nodeId]) return;
@@ -133,23 +150,6 @@ export function RadialOrbitalTimeline({
     const targetAngle = (nodeIndex / totalNodes) * 360;
 
     setRotationAngle(270 - targetAngle);
-  };
-
-  const calculateNodePosition = (index: number, total: number) => {
-    const angle = ((index / total) * 360 + rotationAngle) % 360;
-    const radius = 192; // Match w-96 (384px) radius exactly
-    const radian = (angle * Math.PI) / 180;
-
-    const x = Number((radius * Math.cos(radian) + centerOffset.x).toFixed(2));
-    const y = Number((radius * Math.sin(radian) + centerOffset.y).toFixed(2));
-
-    const zIndex = Math.round(100 + 50 * Math.cos(radian));
-    const opacity = Number(Math.max(
-      0.4,
-      Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2))
-    ).toFixed(3));
-
-    return { x, y, angle, zIndex, opacity };
   };
 
   const getRelatedItems = (itemId: number): number[] => {
@@ -163,24 +163,20 @@ export function RadialOrbitalTimeline({
     return relatedItems.includes(itemId);
   };
 
-  const getStatusStyles = (status: TimelineItem["status"]): string => {
-    switch (status) {
-      case "completed":
-        return "text-white bg-black border-white";
-      case "in-progress":
-        return "text-black bg-white border-black";
-      case "pending":
-        return "text-white bg-black/40 border-white/50";
-      default:
-        return "text-white bg-black/40 border-white/50";
-    }
-  };
 
   return (
     <div
       className="w-full h-full flex flex-col items-center justify-center overflow-hidden"
       ref={containerRef}
       onClick={handleContainerClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleContainerClick(e as unknown as React.MouseEvent<HTMLDivElement>);
+        }
+      }}
+      role="button"
+      tabIndex={0}
     >
       <div className="relative w-full max-w-4xl h-full flex items-center justify-center">
         <div
@@ -191,21 +187,16 @@ export function RadialOrbitalTimeline({
             transform: `translate(${centerOffset.x}px, ${centerOffset.y}px)`,
           }}
         >
-          <div className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 via-blue-500 to-violet-500 animate-pulse flex items-center justify-center z-10">
-            <div className="absolute w-20 h-20 rounded-full border border-white/20 animate-ping opacity-70"></div>
-            <div
-              className="absolute w-24 h-24 rounded-full border border-white/10 animate-ping opacity-50"
-              style={{ animationDelay: "0.5s" }}
-            ></div>
-            <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-[inset_0_0_10px_rgba(255,255,255,0.2)]">
-              <span className="text-white font-black text-2xl drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">K</span>
+          <div className="absolute w-[90vw] max-w-sm aspect-square rounded-full border border-border"></div>
+
+          <div className="absolute w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center z-10">
+            <div className="w-12 h-12 rounded-full bg-background border border-border flex items-center justify-center shadow-sm">
+              <span className="text-foreground font-black text-2xl">K</span>
             </div>
           </div>
 
-          <div className="absolute w-96 h-96 rounded-full border border-white/10"></div>
-
           {timelineData.map((item, index) => {
-            const position = calculateNodePosition(index, timelineData.length);
+            const position = calculateNodePosition(index, timelineData.length, rotationAngle, centerOffset);
             const isExpanded = expandedItems[item.id];
             const isRelated = isRelatedToActive(item.id);
             const isPulsing = pulseEffect[item.id];
@@ -229,39 +220,47 @@ export function RadialOrbitalTimeline({
                   e.stopPropagation();
                   toggleItem(item.id);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleItem(item.id);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
               >
                 <div
                   className={`absolute rounded-full -inset-1 ${
-                    isPulsing ? "animate-pulse duration-1000" : ""
+                    isPulsing ? "animate-pulse duration-1000 bg-primary/10" : ""
                   }`}
                   style={{
-                    background: `radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)`,
-                    width: `${item.energy * 0.5 + 40}px`,
-                    height: `${item.energy * 0.5 + 40}px`,
-                    left: `-${(item.energy * 0.5 + 40 - 40) / 2}px`,
-                    top: `-${(item.energy * 0.5 + 40 - 40) / 2}px`,
+                    width: `${item.energy * 0.5 + 44}px`,
+                    height: `${item.energy * 0.5 + 44}px`,
+                    left: `-${(item.energy * 0.5 + 44 - 44) / 2}px`,
+                    top: `-${(item.energy * 0.5 + 44 - 44) / 2}px`,
                   }}
                 ></div>
 
                 <div
                   className={`
-                  w-10 h-10 shrink-0 rounded-full flex items-center justify-center
+                  w-11 h-11 shrink-0 rounded-full flex items-center justify-center
                   ${
                     isExpanded
-                      ? "bg-white text-black"
+                      ? "bg-primary text-primary-foreground"
                       : isRelated
-                      ? "bg-white/50 text-black"
-                      : "bg-black text-white"
+                      ? "bg-primary/50 text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
                   }
                   border-2 
                   ${
                     isExpanded
-                      ? "border-white shadow-lg shadow-white/30"
+                      ? "border-primary shadow-lg shadow-primary/30"
                       : isRelated
-                      ? "border-white animate-pulse"
-                      : "border-white/40"
+                      ? "border-primary/50 animate-pulse"
+                      : "border-border"
                   }
-                  transition-all duration-300 transform
+                  transition-all duration-300 transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
                   ${isExpanded ? "scale-150" : ""}
                 `}
                 >
@@ -270,59 +269,58 @@ export function RadialOrbitalTimeline({
 
                 <div
                   className={`
-                  absolute top-8 whitespace-nowrap
+                  absolute top-10 whitespace-nowrap
                   text-xs font-semibold tracking-wider
                   transition-all duration-300
-                  ${isExpanded ? "opacity-0 scale-50 pointer-events-none" : "text-white/70 opacity-100"}
+                  ${isExpanded ? "opacity-0 scale-50 pointer-events-none" : "text-foreground/70 opacity-100"}
                 `}
                 >
                   {item.title}
                 </div>
 
                 {isExpanded && (
-                  <Card className="absolute top-[52px] left-1/2 -translate-x-1/2 w-64 bg-zinc-950/95 backdrop-blur-lg border-white/20 shadow-2xl shadow-indigo-500/10 overflow-visible z-50">
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-px h-[32px] bg-gradient-to-b from-transparent to-white/50"></div>
+                  <Card className="absolute top-[52px] left-1/2 -translate-x-1/2 w-64 bg-card/95 backdrop-blur-md border-border shadow-2xl overflow-visible z-50">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-px h-[32px] bg-border"></div>
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-center">
                         <Badge
-                          className={`px-2 text-[10px] uppercase font-bold tracking-wider ${getStatusStyles(
-                            item.status
-                          )}`}
+                          variant="secondary"
+                          className="px-2 text-[10px] uppercase font-bold tracking-wider"
                         >
                           {item.status.replace("-", " ")}
                         </Badge>
-                        <span className="text-xs font-mono text-white/50">
+                        <span className="text-xs font-mono text-muted-foreground">
                           {item.date}
                         </span>
                       </div>
-                      <CardTitle className="text-sm mt-2 text-white">
+                      <CardTitle className="text-sm mt-2 text-foreground">
                         {item.title}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="text-xs text-white/80">
+                    <CardContent className="text-xs text-muted-foreground">
                       <p className="leading-relaxed">{item.content}</p>
 
-                      <div className="mt-4 pt-3 border-t border-white/10">
+                      <div className="mt-4 pt-3 border-t border-border">
                         <div className="flex justify-between items-center text-xs mb-1">
-                          <span className="flex items-center text-zinc-400">
-                            <Zap size={10} className="mr-1 text-indigo-400" />
+                          <span className="flex items-center text-muted-foreground">
+                            <Zap size={10} className="mr-1 text-primary" />
                             Kairo Energy
                           </span>
-                          <span className="font-mono text-white">{item.energy}%</span>
+                          <span className="font-mono text-foreground">{item.energy}%</span>
                         </div>
-                        <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-indigo-500 to-violet-500"
+                            className="h-full bg-primary"
                             style={{ width: `${item.energy}%` }}
                           ></div>
                         </div>
                       </div>
 
                       {item.relatedIds.length > 0 && (
-                        <div className="mt-4 pt-3 border-t border-white/10">
+                        <div className="mt-4 pt-3 border-t border-border">
                           <div className="flex items-center mb-2">
-                            <Link size={10} className="text-white/50 mr-1" />
-                            <h4 className="text-[10px] uppercase tracking-widest font-semibold text-white/50">
+                            <Link size={10} className="text-muted-foreground mr-1" />
+                            <h4 className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground">
                               Connected Nodes
                             </h4>
                           </div>
@@ -336,7 +334,7 @@ export function RadialOrbitalTimeline({
                                   key={relatedId}
                                   variant="outline"
                                   size="sm"
-                                  className="flex items-center h-6 px-2 py-0 text-[10px] rounded border-white/20 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white transition-all"
+                                  className="flex items-center h-6 px-2 py-0 text-[10px] rounded border-border bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     toggleItem(relatedId);
@@ -345,7 +343,7 @@ export function RadialOrbitalTimeline({
                                   {relatedItem?.title}
                                   <ArrowRight
                                     size={8}
-                                    className="ml-1 text-white/60"
+                                    className="ml-1 opacity-60"
                                   />
                                 </Button>
                               );

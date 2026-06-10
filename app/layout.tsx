@@ -14,6 +14,8 @@ const geistMono = Geist_Mono({
 
 import { AnimatedTabTitle } from "@/components/custom/AnimatedTabTitle";
 
+import { ThemeProvider } from "@/components/theme-provider";
+
 export const metadata: Metadata = {
   title: "KairoTask | Gestión Ágil para Equipos Modernos",
   description: "Ecosistema orbital de productividad y gestión de proyectos con interfaz dev-centric.",
@@ -25,12 +27,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AnimatedTabTitle />
-        {children}
+        <ThemeProvider>
+          <AnimatedTabTitle />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
