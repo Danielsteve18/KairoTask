@@ -355,7 +355,7 @@ export function RadialOrbitalTimeline({
                                   {relatedItem?.title}
                                   <ArrowRight
                                     size={8}
-                                    className="ml-1 text-white/60"
+                                    className="ml-1 opacity-60"
                                   />
                                 </Button>
                               );
