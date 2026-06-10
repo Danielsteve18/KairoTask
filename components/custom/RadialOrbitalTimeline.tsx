@@ -163,18 +163,6 @@ export function RadialOrbitalTimeline({
     return relatedItems.includes(itemId);
   };
 
-  const getStatusStyles = (status: TimelineItem["status"]): string => {
-    switch (status) {
-      case "completed":
-        return "text-white bg-black border-white";
-      case "in-progress":
-        return "text-black bg-white border-black";
-      case "pending":
-        return "text-white bg-black/40 border-white/50";
-      default:
-        return "text-white bg-black/40 border-white/50";
-    }
-  };
 
   return (
     <div
@@ -184,7 +172,7 @@ export function RadialOrbitalTimeline({
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          handleContainerClick(e as any);
+          handleContainerClick(e as unknown as React.MouseEvent<HTMLDivElement>);
         }
       }}
       role="button"

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { Kanban, Timer, Terminal, Users, Zap, Bell, Database } from "lucide-react";
+import { Kanban, Timer, Terminal, Zap, Bell, Database } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 
