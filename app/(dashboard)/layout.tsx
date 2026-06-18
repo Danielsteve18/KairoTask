@@ -1,4 +1,6 @@
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
+import { UserMenu } from "@/components/layout/UserMenu";
+import { ThemeToggle } from "@/components/custom/ThemeToggle";
 
 export default function DashboardLayout({
   children,
@@ -6,19 +8,22 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-black">
+    <div className="flex h-screen w-full overflow-hidden" style={{ background: "var(--dash-bg)" }}>
       {/* Sidebar */}
       <DashboardSidebar />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <header className="h-16 shrink-0 flex items-center px-6 border-b border-white/10 bg-black/50 backdrop-blur-sm">
-          <div className="flex items-center gap-2 text-xs font-mono text-[#475569]">
-            <span className="text-[#22C55E]">~/</span>
+        <header
+          className="h-16 shrink-0 flex items-center px-6 border-b backdrop-blur-sm"
+          style={{ borderColor: "var(--dash-border)", background: "color-mix(in srgb, var(--dash-bg) 80%, transparent)" }}
+        >
+          <div className="flex items-center gap-2 text-xs font-mono" style={{ color: "var(--dash-text-muted)" }}>
+            <span style={{ color: "var(--dash-accent)" }}>~/</span>
             <span>kairo</span>
-            <span className="text-[#22C55E]">/</span>
-            <span className="text-[#F8FAFC]">workspace</span>
+            <span style={{ color: "var(--dash-accent)" }}>/</span>
+            <span style={{ color: "var(--dash-text)" }}>workspace</span>
           </div>
 
           <div className="ml-auto flex items-center gap-3">
@@ -30,10 +35,11 @@ export default function DashboardLayout({
               </span>
             </div>
 
-            {/* Avatar */}
-            <div className="w-8 h-8 rounded-full bg-[#22C55E]/10 border border-[#22C55E]/20 flex items-center justify-center text-[#22C55E] text-xs font-bold">
-              U
-            </div>
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
+            {/* User menu dropdown */}
+            <UserMenu />
           </div>
         </header>
 

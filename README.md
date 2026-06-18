@@ -340,6 +340,20 @@ Una vez que el Pull Request ha sido aprobado y todas las conversaciones resuelta
 
 ---
 
+## 🧪 Usuario de Pruebas (Testing)
+
+Para evaluar el flujo completo de la aplicación sin necesidad de crear una cuenta, usa las siguientes credenciales preconfiguradas en Supabase:
+
+| Campo       | Valor                  |
+| :---------- | :--------------------- |
+| **Email**   | `test@kairotask.dev`   |
+| **Password**| `Test1234!`            |
+| **Rol**     | `user` (autenticado)   |
+
+> **Nota:** Este usuario ya tiene el email confirmado. No es necesario verificar bandeja de entrada.
+
+---
+
 ## 👥 Equipo de Desarrollo (Universidad Del Pacífico)
 
 - **Daniel Steve Montaño** - _Full-stack Developer & Arquitectura_
