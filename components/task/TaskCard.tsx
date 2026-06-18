@@ -35,7 +35,7 @@ const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; bg: stri
   low: { label: "Low", color: "#94A3B8", bg: "#94A3B818", border: "#94A3B830" },
 };
 
-export function TaskCard({ task }: { task: TaskItem }) {
+export function TaskCard({ task, isDragging = false }: { task: TaskItem; isDragging?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const priority = PRIORITY_CONFIG[task.priority];
 
@@ -45,8 +45,13 @@ export function TaskCard({ task }: { task: TaskItem }) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ scale: 1.01 }}
-      className="group rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/20 transition-all duration-200 cursor-grab active:cursor-grabbing overflow-hidden"
+      className={`
+        group rounded-xl border bg-white/[0.03] transition-all duration-200 cursor-grab active:cursor-grabbing overflow-hidden
+        ${isDragging
+          ? "border-[#22C55E]/40 bg-white/[0.08] scale-[1.02]"
+          : "border-white/10 hover:bg-white/[0.06] hover:border-white/20"
+        }
+      `}
     >
       {/* Accent top border */}
       <div
