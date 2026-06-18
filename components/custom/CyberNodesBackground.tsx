@@ -17,7 +17,17 @@ export const CyberNodesBackground = () => {
     canvas.height = height;
 
     const chars = ["{", "}", "</>", "()", "[]", "0", "1", "&&", "||", "=>", "K", "T"];
-    const particles: any[] = [];
+    
+    interface Particle {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      char: string;
+      baseAlpha: number;
+    }
+    
+    const particles: Particle[] = [];
     const count = Math.floor((width * height) / 20000); // Ajuste responsivo
 
     for (let i = 0; i < count; i++) {
@@ -32,7 +42,7 @@ export const CyberNodesBackground = () => {
     }
 
     let animationId: number;
-    let mouse = { x: -1000, y: -1000 };
+    const mouse = { x: -1000, y: -1000 };
 
     const handleMouseMove = (e: MouseEvent) => {
       mouse.x = e.clientX;
@@ -66,7 +76,7 @@ export const CyberNodesBackground = () => {
       }
 
       // Dibujar partículas y conectar con el mouse
-      for (let p of particles) {
+      for (const p of particles) {
         // Interacción con el mouse
         const dxMouse = p.x - mouse.x;
         const dyMouse = p.y - mouse.y;
