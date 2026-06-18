@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GripVertical, Clock, CheckCircle2, AlertCircle, Zap, ChevronDown, Plus, User, Tag } from "lucide-react";
+import { GripVertical, Clock, CheckCircle2, AlertCircle, Zap, ChevronDown, User, Tag } from "lucide-react";
 
 export type Priority = "critical" | "high" | "medium" | "low";
 export type TaskStatus = "backlog" | "in-progress" | "review" | "done";

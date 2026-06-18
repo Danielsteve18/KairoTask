@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Bell, Moon, Globe, Shield, Trash2, ChevronRight, ToggleLeft, ToggleRight, Save, Loader2, CheckCircle2 } from "lucide-react";
+import { Moon, Globe, Shield, Trash2, ChevronRight, Save, Loader2, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 

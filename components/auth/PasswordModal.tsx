@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Eye, EyeOff, Lock, ShieldCheck, KeyRound } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck, KeyRound } from "lucide-react";
 
 interface PasswordModalProps {
   isOpen: boolean;
@@ -45,14 +45,15 @@ export function PasswordModal({
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // Reset inputs when modal opens
-  useEffect(() => {
-    if (isOpen) {
+  function handleOpenChange(open: boolean) {
+    if (!open) {
+      // Limpiar cuando se cierra
       setPassword("");
       setConfirm("");
       setShowPassword(false);
     }
-  }, [isOpen]);
+    onOpenChange(open);
+  }
 
   const strength = getPasswordStrength(password);
   
@@ -67,7 +68,7 @@ export function PasswordModal({
   function handleSave() {
     if (isValid) {
       onSave(password);
-      onOpenChange(false);
+      handleOpenChange(false);
     }
   }
 
@@ -87,7 +88,7 @@ export function PasswordModal({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="bg-[#09090B] border-white/10 text-white sm:max-w-md p-6">
         <DialogHeader className="mb-4">
           <div className="w-10 h-10 rounded-full bg-[#22C55E]/10 flex items-center justify-center mb-4">

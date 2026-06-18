@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import Link from "next/link";
 import {
@@ -11,46 +12,10 @@ import {
   CheckCircle2,
   AlertCircle,
   Zap,
+  Loader2,
 } from "lucide-react";
-
-const MOCK_PROJECTS = [
-  {
-    id: "alpha",
-    name: "KairoTask · Core",
-    description: "Módulo principal de gestión ágil y tableros Kanban.",
-    progress: 68,
-    energy: 90,
-    status: "active",
-    members: ["DM", "LF", "DC"],
-    tasks: { total: 47, done: 32 },
-    sprint: "Sprint 3",
-    color: "#22C55E",
-  },
-  {
-    id: "beta",
-    name: "KairoTask · Auth & Seguridad",
-    description: "Sistema completo de autenticación con Supabase y RLS.",
-    progress: 92,
-    energy: 60,
-    status: "review",
-    members: ["DM", "LF"],
-    tasks: { total: 21, done: 19 },
-    sprint: "Sprint 2",
-    color: "#A855F7",
-  },
-  {
-    id: "gamma",
-    name: "KairoTask · Notificaciones",
-    description: "Pipeline de notificaciones en tiempo real via BillionMail.",
-    progress: 30,
-    energy: 45,
-    status: "pending",
-    members: ["DC"],
-    tasks: { total: 18, done: 5 },
-    sprint: "Sprint 4",
-    color: "#F59E0B",
-  },
-];
+import { useProjects } from "@/hooks/useProjects";
+import { CreateProjectModal } from "@/components/project/CreateProjectModal";
 
 const STATUS_CONFIG = {
   active:  { label: "Activo",       icon: Zap,          color: "#22C55E", bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.2)"   },
@@ -70,6 +35,31 @@ const cardVariants: Variants = {
 };
 
 export default function ProjectsPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { projects, isLoading, error } = useProjects();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: "var(--dash-accent)" }} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <AlertCircle className="w-8 h-8 text-red-500" />
+        <p className="text-red-400 font-mono text-sm">Error cargando proyectos: {error.message}</p>
+      </div>
+    );
+  }
+
+  const activeProjectsCount = projects?.filter(p => p.status === 'active').length || 0;
+  const totalTasks = projects?.reduce((acc, p) => acc + (p.tasks?.total || 0), 0) || 0;
+  const doneTasks = projects?.reduce((acc, p) => acc + (p.tasks?.done || 0), 0) || 0;
+  const totalMembers = 1; // Temporariamente 1 por ser el owner
+
   return (
     <div className="p-6 md:p-8 min-h-full">
       {/* Header */}
@@ -82,11 +72,12 @@ export default function ProjectsPage() {
             Mis Proyectos
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--dash-text-muted)" }}>
-            {MOCK_PROJECTS.length} proyectos activos en este workspace
+            {projects?.length || 0} proyectos en total en este workspace
           </p>
         </div>
 
         <button
+          onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold active:scale-[0.97] transition-all duration-200"
           style={{ background: "var(--dash-accent)", color: "#020617", boxShadow: "0 0 20px rgba(34,197,94,0.25)" }}
         >
@@ -98,10 +89,10 @@ export default function ProjectsPage() {
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
         {[
-          { label: "Proyectos",     value: "3",  icon: FolderKanban, color: "#22C55E" },
-          { label: "Tareas totales", value: "86", icon: CheckCircle2, color: "#A855F7" },
-          { label: "Completadas",   value: "56", icon: CheckCircle2, color: "#22C55E" },
-          { label: "Miembros",      value: "3",  icon: Users,        color: "#F59E0B" },
+          { label: "Proyectos Activos", value: activeProjectsCount, icon: FolderKanban, color: "#22C55E" },
+          { label: "Tareas totales",    value: totalTasks,          icon: AlertCircle,  color: "#A855F7" },
+          { label: "Completadas",       value: doneTasks,           icon: CheckCircle2, color: "#22C55E" },
+          { label: "Miembros",          value: totalMembers,        icon: Users,        color: "#F59E0B" },
         ].map((stat) => (
           <div
             key={stat.label}
@@ -129,15 +120,15 @@ export default function ProjectsPage() {
         animate="visible"
         className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
       >
-        {MOCK_PROJECTS.map((project) => {
-          const status = STATUS_CONFIG[project.status as keyof typeof STATUS_CONFIG];
+        {projects?.map((project) => {
+          const status = STATUS_CONFIG[project.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.active;
           const StatusIcon = status.icon;
 
           return (
             <motion.div key={project.id} variants={cardVariants}>
               <Link href={`/projects/${project.id}`} className="block group">
                 <div
-                  className="rounded-2xl border p-6 h-full cursor-pointer transition-all duration-300"
+                  className="rounded-2xl border p-6 h-full cursor-pointer transition-all duration-300 flex flex-col"
                   style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}
                   onMouseEnter={e => {
                     (e.currentTarget as HTMLElement).style.background = "var(--dash-surface-hover)";
@@ -166,12 +157,12 @@ export default function ProjectsPage() {
                   <h2 className="font-bold text-base mb-1 transition-colors" style={{ color: "var(--dash-text)" }}>
                     {project.name}
                   </h2>
-                  <p className="text-xs leading-relaxed mb-5" style={{ color: "var(--dash-text-muted)" }}>
-                    {project.description}
+                  <p className="text-xs leading-relaxed mb-5 flex-1" style={{ color: "var(--dash-text-muted)" }}>
+                    {project.description || "Sin descripción"}
                   </p>
 
                   {/* Progress Bar */}
-                  <div className="mb-5">
+                  <div className="mb-5 mt-auto">
                     <div className="flex justify-between items-center mb-1.5">
                       <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--dash-text-muted)" }}>
                         Progreso
@@ -194,7 +185,7 @@ export default function ProjectsPage() {
                   {/* Footer */}
                   <div className="flex items-center justify-between">
                     <div className="flex -space-x-2">
-                      {project.members.map((initials) => (
+                      {project.members?.map((initials) => (
                         <div
                           key={initials}
                           className="w-7 h-7 rounded-full border-2 flex items-center justify-center text-[10px] font-bold"
@@ -206,7 +197,7 @@ export default function ProjectsPage() {
                     </div>
 
                     <div className="flex items-center gap-1 text-xs transition-colors duration-200" style={{ color: "var(--dash-text-muted)" }}>
-                      <span className="font-mono">{project.tasks.done}/{project.tasks.total} tareas</span>
+                      <span className="font-mono">{project.tasks?.done || 0}/{project.tasks?.total || 0} tareas</span>
                       <ChevronRight className="w-3 h-3" />
                     </div>
                   </div>
@@ -219,6 +210,7 @@ export default function ProjectsPage() {
         {/* New Project Card */}
         <motion.div variants={cardVariants}>
           <button
+            onClick={() => setIsModalOpen(true)}
             className="w-full h-full min-h-[240px] rounded-2xl border-2 border-dashed bg-transparent transition-all duration-300 flex flex-col items-center justify-center gap-3 group cursor-pointer"
             style={{ borderColor: "var(--dash-border)" }}
           >
@@ -232,6 +224,8 @@ export default function ProjectsPage() {
           </button>
         </motion.div>
       </motion.div>
+
+      <CreateProjectModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }

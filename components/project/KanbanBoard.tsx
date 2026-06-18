@@ -30,14 +30,12 @@ const INITIAL_TASKS: TaskItem[] = [
 
 export function KanbanBoard() {
   const [tasks, setTasks] = useState<TaskItem[]>(INITIAL_TASKS);
-  const [draggingId, setDraggingId] = useState<string | null>(null);
 
   const getColumnTasks = (colId: TaskStatus) => tasks.filter((t) => t.status === colId);
 
-  const onDragStart = (start: { draggableId: string }) => setDraggingId(start.draggableId);
+  const onDragStart = (_start: { draggableId: string }) => {};
 
   const onDragEnd = (result: DropResult) => {
-    setDraggingId(null);
     const { destination, source, draggableId } = result;
     if (!destination) return;
     if (destination.droppableId === source.droppableId && destination.index === source.index) return;
