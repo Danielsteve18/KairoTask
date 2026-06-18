@@ -1,13 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Database, Globe, Layout, MonitorPlay, Zap, Layers } from "lucide-react";
+import { Database, Globe, Layout, MonitorPlay, Zap, Layers, Network } from "lucide-react";
 
 const technologies = [
   { name: "Next.js 16", icon: Globe, color: "text-zinc-100" },
   { name: "Supabase", icon: Database, color: "text-green-500" },
   { name: "Tailwind CSS", icon: Layout, color: "text-cyan-400" },
   { name: "Playwright", icon: MonitorPlay, color: "text-rose-500" },
+  { name: "TanStack", icon: Network, color: "text-red-500" },
   { name: "GSAP & Framer", icon: Zap, color: "text-yellow-400" },
   { name: "Zustand", icon: Layers, color: "text-amber-600" },
 ];

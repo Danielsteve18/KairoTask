@@ -140,7 +140,8 @@ export const SnakeGridBackground = () => {
     initTetrisShapes();
 
     const drawGrid = (isDark: boolean) => {
-      ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.02)";
+      // Aumentamos la opacidad en modo claro (de 0.02 a 0.15) para que sea visible
+      ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.15)";
       ctx.lineWidth = 1;
 
       // Vertical grid lines
