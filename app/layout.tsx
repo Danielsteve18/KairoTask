@@ -13,12 +13,35 @@ const geistMono = Geist_Mono({
 });
 
 import { AnimatedTabTitle } from "@/components/custom/AnimatedTabTitle";
-
 import { ThemeProvider } from "@/components/theme-provider";
+import { QueryProvider } from "@/components/query-provider";
 
 export const metadata: Metadata = {
-  title: "KairoTask | Gestión Ágil para Equipos Modernos",
-  description: "Ecosistema orbital de productividad y gestión de proyectos con interfaz dev-centric.",
+  title: {
+    default: "KairoTask | Gestión Ágil para Equipos Modernos",
+    template: "%s | KairoTask",
+  },
+  description:
+    "Ecosistema orbital de productividad y gestión de proyectos con interfaz dev-centric. Kanban, sprints y métricas en tiempo real para equipos de ingeniería.",
+  metadataBase: new URL("https://kairotask.app"),
+  openGraph: {
+    type: "website",
+    siteName: "KairoTask",
+    title: "KairoTask | Gestión Ágil para Equipos Modernos",
+    description:
+      "Ecosistema orbital de productividad y gestión de proyectos con interfaz dev-centric.",
+    locale: "es_MX",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "KairoTask | Gestión Ágil para Equipos Modernos",
+    description:
+      "Ecosistema orbital de productividad y gestión de proyectos con interfaz dev-centric.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
@@ -27,13 +50,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
         <ThemeProvider>
-          <AnimatedTabTitle />
-          {children}
+          <QueryProvider>
+            <AnimatedTabTitle />
+            {children}
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>
