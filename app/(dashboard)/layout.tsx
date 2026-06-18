@@ -1,6 +1,7 @@
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { ThemeToggle } from "@/components/custom/ThemeToggle";
+import { DashboardBreadcrumb } from "@/components/layout/DashboardBreadcrumb";
 
 export default function DashboardLayout({
   children,
@@ -19,12 +20,8 @@ export default function DashboardLayout({
           className="h-16 shrink-0 flex items-center px-6 border-b backdrop-blur-sm"
           style={{ borderColor: "var(--dash-border)", background: "color-mix(in srgb, var(--dash-bg) 80%, transparent)" }}
         >
-          <div className="flex items-center gap-2 text-xs font-mono" style={{ color: "var(--dash-text-muted)" }}>
-            <span style={{ color: "var(--dash-accent)" }}>~/</span>
-            <span>kairo</span>
-            <span style={{ color: "var(--dash-accent)" }}>/</span>
-            <span style={{ color: "var(--dash-text)" }}>workspace</span>
-          </div>
+          {/* Breadcrumb Dinámico */}
+          <DashboardBreadcrumb />
 
           <div className="ml-auto flex items-center gap-3">
             {/* Status indicator */}
