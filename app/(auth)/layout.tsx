@@ -1,6 +1,9 @@
 import { CyberNodesBackground } from "@/components/custom/CyberNodesBackground";
 import { AuthBackLink } from "@/components/auth/AuthBackLink";
 
+// Forzamos renderizado dinámico: CyberNodesBackground usa APIs del browser (canvas, window)
+export const dynamic = "force-dynamic";
+
 export default function AuthLayout({
   children,
 }: {
