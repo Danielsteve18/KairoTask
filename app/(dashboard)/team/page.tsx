@@ -12,6 +12,7 @@ import {
   Loader2,
   AlertCircle,
   ArrowRight,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -31,7 +32,7 @@ interface GroupedMember {
 }
 
 export default function TeamPage() {
-  const { teamMembers, isLoadingTeam, teamError } = useProjectMembers();
+  const { teamMembers, isLoadingTeam, teamError, updateMemberRole, removeMember } = useProjectMembers();
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -83,9 +84,16 @@ export default function TeamPage() {
     return nameMatch || emailMatch;
   });
 
+  // IDs de proyectos que el usuario actual puede gestionar (owner)
+  const ownedProjectIds = new Set(
+    (teamMembers || [])
+      .filter(m => m.user_id === currentUserId && m.role === "owner")
+      .map(m => m.project_id)
+  );
+
   // Calcular métricas
   const totalCollaborators = collaboratorsList.length;
-  const uniqueProjectsCount = new Set((teamMembers || []).map((m) => m.project_id)).size;
+  const uniqueProjectsCount = ownedProjectIds.size;
 
   if (isLoadingTeam) {
     return (
@@ -282,24 +290,70 @@ export default function TeamPage() {
 
                     {/* Proyectos compartidos */}
                     <div className="flex flex-wrap items-center gap-2 max-w-md">
-                      {colab.sharedProjects.map((p) => (
-                        <Link
-                          key={p.memberRecordId}
-                          href={`/projects/${p.id}`}
-                          className="px-2.5 py-1 rounded-full border text-[11px] font-mono flex items-center gap-1.5 hover:opacity-85 transition-all"
-                          style={{
-                            borderColor: p.color + "30",
-                            background: p.color + "08",
-                            color: p.color,
-                          }}
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.color }} />
-                          {p.name}
-                          <span className="text-[9px] uppercase opacity-60 font-semibold">
-                            ({p.role === "owner" ? "dueño" : p.role === "collaborator" ? "colab" : "lector"})
-                          </span>
-                        </Link>
-                      ))}
+                      {colab.sharedProjects.map((p) => {
+                        const canManage = ownedProjectIds.has(p.id) && p.role !== "owner";
+                        return (
+                          <div
+                            key={p.memberRecordId}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-mono transition-all"
+                            style={{
+                              borderColor: p.color + "30",
+                              background: p.color + "08",
+                              color: p.color,
+                            }}
+                          >
+                            <Link
+                              href={`/projects/${p.id}`}
+                              className="flex items-center gap-1.5 hover:opacity-85"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.color }} />
+                              {p.name}
+                            </Link>
+                            <span className="text-[9px] uppercase opacity-60 font-semibold ml-0.5">
+                              ({p.role === "owner" ? "dueño" : p.role === "collaborator" ? "colab" : "lector"})
+                            </span>
+                            {canManage && (
+                              <>
+                                <select
+                                  value={p.role}
+                                  onChange={async (e) => {
+                                    try {
+                                      await updateMemberRole.mutateAsync({
+                                        memberId: p.memberRecordId,
+                                        role: e.target.value as "collaborator" | "viewer",
+                                      });
+                                    } catch (err: unknown) {
+                                      alert(err instanceof Error ? err.message : "Error al actualizar rol.");
+                                    }
+                                  }}
+                                  className="text-[9px] font-mono bg-transparent border rounded px-0.5 py-0 outline-none cursor-pointer ml-0.5"
+                                  style={{ borderColor: p.color + "40", color: p.color }}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <option value="collaborator">Colab.</option>
+                                  <option value="viewer">Lector</option>
+                                </select>
+                                <button
+                                  onClick={async () => {
+                                    if (confirm(`¿Remover a ${colab.email} de ${p.name}?`)) {
+                                      try {
+                                        await removeMember.mutateAsync(p.memberRecordId);
+                                      } catch (err: unknown) {
+                                        alert(err instanceof Error ? err.message : "Error al remover.");
+                                      }
+                                    }
+                                  }}
+                                  className="p-0.5 rounded hover:bg-red-400/10 transition-colors ml-0.5"
+                                  style={{ color: "#EF4444" }}
+                                  title="Remover"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </motion.div>
                 );

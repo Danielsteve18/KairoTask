@@ -145,30 +145,46 @@ export function useProjectMembers(projectId?: string) {
 
   // ── Invite/Add Member to Project ───────────────────────────────────────────
   const addMember = useMutation({
-    mutationFn: async ({ email, role = "collaborator" }: { email: string; role?: "collaborator" | "viewer" }) => {
+    mutationFn: async ({ email, userId, role = "collaborator" }: { email?: string; userId?: string; role?: "collaborator" | "viewer" }) => {
       if (!projectId) throw new Error("ID de proyecto no especificado");
+      if (!email && !userId) throw new Error("Debes proporcionar un email o un ID de usuario.");
+      if (email && userId) throw new Error("Proporciona solo email o solo ID, no ambos.");
 
-      const cleanEmail = email.trim().toLowerCase();
+      let profileId: string;
 
-      // 1. Buscar si el perfil del usuario existe en KairoTask
-      const { data: profile, error: profileErr } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("email", cleanEmail)
-        .maybeSingle();
+      if (email) {
+        const cleanEmail = email.trim().toLowerCase();
+        const { data: profile, error: profileErr } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("email", cleanEmail)
+          .maybeSingle();
 
-      if (profileErr) throw new Error(profileErr.message);
-      if (!profile) {
-        throw new Error(`El usuario con email "${cleanEmail}" no está registrado en KairoTask.`);
+        if (profileErr) throw new Error(profileErr.message);
+        if (!profile) {
+          throw new Error(`El usuario con email "${cleanEmail}" no está registrado en KairoTask.`);
+        }
+        profileId = profile.id;
+      } else {
+        const { data: profile, error: profileErr } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", userId!)
+          .maybeSingle();
+
+        if (profileErr) throw new Error(profileErr.message);
+        if (!profile) {
+          throw new Error(`El usuario con ID "${userId}" no está registrado en KairoTask.`);
+        }
+        profileId = profile.id;
       }
 
-      // 2. Insertar en project_members
       const { data, error } = await supabase
         .from("project_members")
         .insert([
           {
             project_id: projectId,
-            user_id: profile.id,
+            user_id: profileId,
             role,
           },
         ])

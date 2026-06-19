@@ -4,8 +4,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { KanbanBoard } from "@/components/project/KanbanBoard";
 import {
   ArrowLeft, Settings, Users, Activity, GitBranch,
-  Loader2, AlertCircle, X, Check, Clock, UserCircle,
-  Palette, Save, Trash2,
+  Loader2, AlertCircle, X, Clock, UserCircle,
+  Palette, Save, Trash2, Hash, AtSign,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -76,16 +76,16 @@ export default function ProjectPage({
   const [isLoading, setIsLoading]       = useState(true);
   const [fetchError, setFetchError]     = useState<string | null>(null);
   const [activePanel, setActivePanel]   = useState<PanelId>(null);
-  const [userEmail, setUserEmail]       = useState<string>("");
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [ownerEmail, setOwnerEmail]     = useState<string>("");
   const [ownerName, setOwnerName]       = useState<string>("");
   const panelRef                        = useRef<HTMLDivElement>(null);
 
   // Invite states
-  const [inviteEmail, setInviteEmail]     = useState("");
-  const [inviteError, setInviteError]     = useState<string | null>(null);
-  const [inviteSuccess, setInviteSuccess] = useState(false);
+  const [inviteMode, setInviteMode]         = useState<"email" | "id">("email");
+  const [inviteValue, setInviteValue]       = useState("");
+  const [inviteError, setInviteError]       = useState<string | null>(null);
+  const [inviteSuccess, setInviteSuccess]   = useState(false);
 
   // Settings form state
   const [settingsName, setSettingsName]         = useState("");
@@ -109,16 +109,19 @@ export default function ProjectPage({
 
   const handleInviteMember = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inviteEmail.trim()) return;
+    if (!inviteValue.trim()) return;
     setInviteError(null);
     setInviteSuccess(false);
     try {
-      await addMember.mutateAsync({ email: inviteEmail.trim() });
-      setInviteEmail("");
+      const payload = inviteMode === "email"
+        ? { email: inviteValue.trim() }
+        : { userId: inviteValue.trim() };
+      await addMember.mutateAsync(payload);
+      setInviteValue("");
       setInviteSuccess(true);
       setTimeout(() => setInviteSuccess(false), 3000);
-    } catch (err: any) {
-      setInviteError(err.message || "Error al invitar al miembro.");
+    } catch (err: unknown) {
+      setInviteError(err instanceof Error ? err.message : "Error al invitar al miembro.");
     }
   };
 
@@ -178,7 +181,6 @@ export default function ProjectPage({
           }
         }
       }
-      setUserEmail(user?.email ?? "");
       setCurrentUserId(user?.id ?? "");
       setIsLoading(false);
     }
@@ -468,12 +470,13 @@ export default function ProjectPage({
                                         try {
                                           await updateMemberRole.mutateAsync({
                                             memberId: member.id,
-                                            role: e.target.value as any,
+                                            role: e.target.value as "collaborator" | "viewer",
                                           });
-                                        } catch (err: any) {
-                                          alert(err.message);
-                                        }
-                                      }}
+                                          } catch (err: unknown) {
+                                            alert(err instanceof Error ? err.message : "Error al actualizar rol.");
+                                          }
+                                        }}
+
                                       className="text-[10px] font-mono bg-[#020617] border rounded px-1 py-0.5 outline-none cursor-pointer"
                                       style={{ borderColor: "var(--dash-border)", color: "var(--dash-text-muted)" }}
                                     >
@@ -485,8 +488,8 @@ export default function ProjectPage({
                                         if (confirm(`¿Remover a ${member.profile?.email} del proyecto?`)) {
                                           try {
                                             await removeMember.mutateAsync(member.id);
-                                          } catch (err: any) {
-                                            alert(err.message);
+                                          } catch (err: unknown) {
+                                            alert(err instanceof Error ? err.message : "Error al remover.");
                                           }
                                         }
                                       }}
@@ -510,15 +513,41 @@ export default function ProjectPage({
                       {/* Invite form (only visible to project owner) */}
                       {isOwner && (
                         <form onSubmit={handleInviteMember} className="pt-3 border-t space-y-2" style={{ borderColor: "var(--dash-border)" }}>
-                          <p className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--dash-text-muted)" }}>
-                            Invitar nuevo miembro
-                          </p>
+                          <div className="flex items-center justify-between">
+                            <p className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--dash-text-muted)" }}>
+                              Invitar nuevo miembro
+                            </p>
+                            <div className="flex items-center gap-0.5 rounded-lg border overflow-hidden" style={{ borderColor: "var(--dash-border)" }}>
+                              <button
+                                type="button"
+                                onClick={() => setInviteMode("email")}
+                                className="px-2 py-1 text-[9px] font-mono flex items-center gap-1 transition-all"
+                                style={{
+                                  background: inviteMode === "email" ? accentColor + "20" : "transparent",
+                                  color: inviteMode === "email" ? accentColor : "var(--dash-text-muted)",
+                                }}
+                              >
+                                <AtSign className="w-2.5 h-2.5" /> Email
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setInviteMode("id")}
+                                className="px-2 py-1 text-[9px] font-mono flex items-center gap-1 transition-all"
+                                style={{
+                                  background: inviteMode === "id" ? accentColor + "20" : "transparent",
+                                  color: inviteMode === "id" ? accentColor : "var(--dash-text-muted)",
+                                }}
+                              >
+                                <Hash className="w-2.5 h-2.5" /> ID
+                              </button>
+                            </div>
+                          </div>
                           <div className="flex gap-2">
                             <input
-                              type="email"
-                              value={inviteEmail}
-                              onChange={(e) => setInviteEmail(e.target.value)}
-                              placeholder="email@dominio.com"
+                              type={inviteMode === "email" ? "email" : "text"}
+                              value={inviteValue}
+                              onChange={(e) => setInviteValue(e.target.value)}
+                              placeholder={inviteMode === "email" ? "email@dominio.com" : "ID de usuario"}
                               className="flex-1 rounded-lg px-3 py-1.5 text-xs outline-none border transition-all duration-200 min-w-0"
                               style={{
                                 background: "var(--dash-bg)",
