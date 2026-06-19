@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
@@ -26,7 +26,7 @@ export interface ProjectMember {
 
 export function useProjectMembers(projectId?: string) {
   const queryClient = useQueryClient();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   // ── Fetch Members of a Single Project ───────────────────────────────────────
   const {
@@ -87,7 +87,7 @@ export function useProjectMembers(projectId?: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [projectId, queryClient, supabase]);
+  }, [projectId, queryClient]);
 
   // ── Fetch Workspace Team Directory (all members in user's projects) ────────
   const {

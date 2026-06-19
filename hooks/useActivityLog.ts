@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
@@ -46,7 +46,7 @@ export function formatActivity(entry: ActivityEntry): string {
 
 export function useActivityLog(projectId: string) {
   const queryClient = useQueryClient();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const {
     data: entries = [],
@@ -108,7 +108,7 @@ export function useActivityLog(projectId: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [projectId, queryClient, supabase]);
+  }, [projectId, queryClient]);
 
   return {
     entries,
