@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
@@ -43,7 +43,8 @@ export interface CreateTaskInput {
 
 export function useTasks(projectId: string) {
   const queryClient = useQueryClient();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
+  const uid = useRef(Math.random().toString(36).slice(2, 8)).current;
 
   // ── Fetch all tasks for a project ──────────────────────────────────────────
   const {
@@ -69,7 +70,7 @@ export function useTasks(projectId: string) {
     if (!projectId) return;
 
     const channel = supabase
-      .channel(`tasks:${projectId}`)
+      .channel(`tasks:${projectId}:${uid}`)
       .on(
         "postgres_changes",
         {
@@ -82,12 +83,16 @@ export function useTasks(projectId: string) {
           queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR") {
+          console.warn("Realtime no disponible para tasks. Ejecuta la migration 004 en Supabase Dashboard.");
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [projectId, queryClient, supabase]);
+  }, [projectId, queryClient]);
 
   // ── Create Task ─────────────────────────────────────────────────────────────
   const createTask = useMutation({

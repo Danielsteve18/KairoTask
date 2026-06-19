@@ -2,15 +2,15 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { KanbanBoard } from "@/components/project/KanbanBoard";
+import { ActivityFeed } from "@/components/project/ActivityFeed";
 import {
   ArrowLeft, Settings, Users, Activity, GitBranch,
-  Loader2, AlertCircle, X, Clock, UserCircle,
+  Loader2, AlertCircle, X, UserCircle,
   Palette, Save, Trash2, Hash, AtSign,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
-import { useTasks } from "@/hooks/useTasks";
 import { useProjectMembers } from "@/hooks/useProjectMembers";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -38,32 +38,6 @@ const PALETTE_COLORS = [
   "#22C55E", "#A855F7", "#F59E0B", "#3B82F6",
   "#EC4899", "#EF4444", "#06B6D4", "#F97316",
 ];
-
-const STATUS_DOT: Record<string, string> = {
-  backlog:     "#475569",
-  "in-progress": "#F59E0B",
-  review:      "#A855F7",
-  done:        "#22C55E",
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  backlog:     "Backlog",
-  "in-progress": "En Progreso",
-  review:      "Revisión",
-  done:        "Completado",
-};
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function relativeTime(dateStr: string) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1)  return "ahora";
-  if (m < 60) return `hace ${m}m`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `hace ${h}h`;
-  const d = Math.floor(h / 24);
-  return `hace ${d}d`;
-}
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 export default function ProjectPage({
@@ -96,7 +70,6 @@ export default function ProjectPage({
   const [saveError, setSaveError]               = useState<string | null>(null);
 
   // Tasks & Members Hooks
-  const { tasks } = useTasks(projectId);
   const {
     members,
     isLoadingMembers,
@@ -244,10 +217,6 @@ export default function ProjectPage({
   }
 
   const accentColor = project.color ?? "#22C55E";
-  const recentTasks = [...tasks]
-    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-    .slice(0, 6);
-
   const currentStatusCfg = PROJECT_STATUSES.find((s) => s.value === project.status);
 
   return (
@@ -333,36 +302,7 @@ export default function ProjectPage({
                     </div>
 
                     <div className="p-3 max-h-72 overflow-y-auto">
-                      {recentTasks.length === 0 ? (
-                        <div className="flex flex-col items-center py-8 gap-2">
-                          <Clock className="w-6 h-6" style={{ color: "var(--dash-text-muted)" }} />
-                          <p className="text-xs font-mono text-center" style={{ color: "var(--dash-text-muted)" }}>
-                            No hay actividad aún.<br />Crea tu primera tarea.
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="space-y-1">
-                          {recentTasks.map((task) => (
-                            <div key={task.id} className="flex items-start gap-2.5 px-2 py-2 rounded-lg hover:bg-white/5 transition-colors">
-                              <span
-                                className="w-2 h-2 rounded-full mt-1.5 shrink-0"
-                                style={{
-                                  background: STATUS_DOT[task.status] ?? "#475569",
-                                  boxShadow:  `0 0 5px ${STATUS_DOT[task.status] ?? "#475569"}`,
-                                }}
-                              />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[11px] font-medium truncate" style={{ color: "var(--dash-text)" }}>
-                                  {task.title}
-                                </p>
-                                <p className="text-[10px] font-mono" style={{ color: "var(--dash-text-muted)" }}>
-                                  {STATUS_LABEL[task.status] ?? task.status} · {relativeTime(task.updated_at)}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                      <ActivityFeed projectId={projectId} />
                     </div>
                   </motion.div>
                 )}
