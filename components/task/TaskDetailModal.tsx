@@ -10,6 +10,7 @@ import {
 import type { TaskStatus, Priority } from "@/components/task/TaskCard";
 import type { Task, UpdateTaskInput } from "@/hooks/useTasks";
 import { useProjectMembers } from "@/hooks/useProjectMembers";
+import { CommentsSection } from "@/components/task/CommentsSection";
 
 interface TaskDetailModalProps {
   task: Task;
@@ -402,6 +403,9 @@ export function TaskDetailModal({
                 </motion.p>
               )}
             </AnimatePresence>
+
+            {/* Comments */}
+            <CommentsSection taskId={task.id} />
 
             {/* Divider */}
             <div className="border-t" style={{ borderColor: "var(--dash-border)" }} />
