@@ -71,7 +71,11 @@ export function useTaskComments(taskId: string) {
           queryClient.invalidateQueries({ queryKey: ["task-comments", taskId] });
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR") {
+          console.error("Error en Realtime comments");
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

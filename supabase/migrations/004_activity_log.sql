@@ -98,3 +98,10 @@ $$ language plpgsql security definer;
 create trigger on_task_activity
   after insert or update on public.tasks
   for each row execute function public.log_task_activity();
+
+-- 4. Agregar tablas a la publicación Realtime de Supabase
+-- (requerido para que postgres_changes funcione en todas)
+alter publication supabase_realtime add table public.tasks;
+alter publication supabase_realtime add table public.project_members;
+alter publication supabase_realtime add table public.task_comments;
+alter publication supabase_realtime add table public.activity_log;

@@ -82,7 +82,11 @@ export function useTasks(projectId: string) {
           queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR") {
+          console.error("Error en Realtime tasks");
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

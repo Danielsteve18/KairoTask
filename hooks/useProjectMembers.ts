@@ -78,7 +78,11 @@ export function useProjectMembers(projectId?: string) {
           queryClient.invalidateQueries({ queryKey: ["workspace-team"] });
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR") {
+          console.error("Error en Realtime project-members");
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

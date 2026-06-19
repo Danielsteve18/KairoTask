@@ -99,7 +99,11 @@ export function useActivityLog(projectId: string) {
           queryClient.invalidateQueries({ queryKey: ["activity-log", projectId] });
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR") {
+          console.error("Error en Realtime activity-log");
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
