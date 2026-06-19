@@ -11,9 +11,11 @@ import {
   Clock,
   CheckCircle2,
   Loader2,
+  User,
 } from "lucide-react";
 import type { TaskStatus, Priority } from "@/components/task/TaskCard";
 import type { CreateTaskInput } from "@/hooks/useTasks";
+import { useProjectMembers } from "@/hooks/useProjectMembers";
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -51,7 +53,10 @@ export function CreateTaskModal({
   const [tagsInput, setTagsInput]   = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError]           = useState<string | null>(null);
+  const [assigneeId, setAssigneeId] = useState<string>("");
   const titleRef = useRef<HTMLInputElement>(null);
+
+  const { members, isLoadingMembers } = useProjectMembers(projectId);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -61,6 +66,7 @@ export function CreateTaskModal({
       setPriority("medium");
       setStatus(defaultStatus);
       setTagsInput("");
+      setAssigneeId("");
       setError(null);
       setIsSubmitting(false);
       setTimeout(() => titleRef.current?.focus(), 80);
@@ -94,6 +100,7 @@ export function CreateTaskModal({
         priority,
         status,
         tags,
+        assignee_id: assigneeId || null,
       });
       onClose();
     } catch (err: unknown) {
@@ -277,6 +284,36 @@ export function CreateTaskModal({
                     onFocus={(e) => (e.currentTarget.style.borderColor = "#22C55E")}
                     onBlur={(e)  => (e.currentTarget.style.borderColor = "var(--dash-border)")}
                   />
+                </div>
+
+                {/* Assignee */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-mono uppercase tracking-widest" style={{ color: "var(--dash-text-muted)" }}>
+                    Asignar a
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--dash-text-muted)" }} />
+                    <select
+                      value={assigneeId}
+                      onChange={(e) => setAssigneeId(e.target.value)}
+                      disabled={isLoadingMembers}
+                      className="w-full rounded-lg border text-sm outline-none transition-all pl-9 pr-4 py-2.5 appearance-none cursor-pointer font-mono"
+                      style={{
+                        background:  "var(--dash-bg)",
+                        borderColor: "var(--dash-border)",
+                        color:       assigneeId ? "var(--dash-text)" : "var(--dash-text-muted)",
+                      }}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = "#22C55E")}
+                      onBlur={(e)  => (e.currentTarget.style.borderColor = "var(--dash-border)")}
+                    >
+                      <option value="">Sin asignar</option>
+                      {members.map((m) => (
+                        <option key={m.user_id} value={m.user_id}>
+                          {m.profile?.full_name || m.profile?.email || "Miembro"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 {/* Error */}
