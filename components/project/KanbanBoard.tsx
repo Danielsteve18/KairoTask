@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, MoreHorizontal, Loader2, ArrowRight, X, Check } from "lucide-react";
 import { TaskCard, TaskStatus } from "@/components/task/TaskCard";
 import { CreateTaskModal } from "@/components/task/CreateTaskModal";
+import { TaskDetailModal } from "@/components/task/TaskDetailModal";
 import { useTasks } from "@/hooks/useTasks";
 
 const COLUMNS: { id: TaskStatus; label: string; dotColor: string }[] = [
@@ -32,9 +33,10 @@ interface KanbanBoardProps {
 }
 
 export function KanbanBoard({ projectId }: KanbanBoardProps) {
-  const { tasks, isLoading, createTask, updateTaskStatus } = useTasks(projectId);
-  const [modalOpen, setModalOpen]     = useState(false);
-  const [modalStatus, setModalStatus] = useState<TaskStatus>("backlog");
+  const { tasks, isLoading, createTask, updateTask, deleteTask, updateTaskStatus } = useTasks(projectId);
+  const [modalOpen, setModalOpen]       = useState(false);
+  const [modalStatus, setModalStatus]   = useState<TaskStatus>("backlog");
+  const [selectedTask, setSelectedTask] = useState<typeof tasks[number] | null>(null);
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
 
@@ -212,6 +214,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
                                     : undefined,
                                 }}
                                 isDragging={dragSnapshot.isDragging}
+                                onClick={() => setSelectedTask(task)}
                               />
                             </div>
                           )}
@@ -360,6 +363,21 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         projectId={projectId}
         defaultStatus={modalStatus}
       />
+
+      {/* Task Detail Modal */}
+      {selectedTask && (
+        <TaskDetailModal
+          task={selectedTask}
+          projectId={projectId}
+          onClose={() => setSelectedTask(null)}
+          onUpdate={async (input) => {
+            await updateTask.mutateAsync(input);
+          }}
+          onDelete={async (taskId) => {
+            await deleteTask.mutateAsync(taskId);
+          }}
+        />
+      )}
     </div>
   );
 }
