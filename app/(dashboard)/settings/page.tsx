@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Moon, Globe, Shield, Trash2, ChevronRight, Save, Loader2, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { useNotificationPreferences, useSavePreferences } from "@/hooks/useNotificationPreferences";
 
 interface ToggleProps { enabled: boolean; onChange: (v: boolean) => void; }
 
@@ -56,11 +57,23 @@ function SettingRow({ label, description, children }: SettingRowProps) {
 }
 
 export default function SettingsPage() {
-  // Notificaciones
+  const { data: prefs } = useNotificationPreferences();
+  const savePrefs = useSavePreferences();
+
   const [notifEmail,   setNotifEmail]   = useState(true);
   const [notifPush,    setNotifPush]    = useState(false);
   const [notifTask,    setNotifTask]    = useState(true);
   const [notifMention, setNotifMention] = useState(true);
+
+  // Sync local state once prefs load
+  useEffect(() => {
+    if (prefs) {
+      setNotifEmail(prefs.email);
+      setNotifPush(prefs.push);
+      setNotifTask(prefs.task_assignment);
+      setNotifMention(prefs.mentions);
+    }
+  }, [prefs]);
 
   // Apariencia
   const [compactMode, setCompactMode] = useState(false);
@@ -77,8 +90,12 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    // Aquí se persistirían las preferencias en un perfil de Supabase (tabla profiles)
-    await new Promise((r) => setTimeout(r, 800));
+    await savePrefs.mutateAsync({
+      email: notifEmail,
+      push: notifPush,
+      task_assignment: notifTask,
+      mentions: notifMention,
+    });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
