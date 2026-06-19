@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useId } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
@@ -44,7 +44,7 @@ export interface CreateTaskInput {
 export function useTasks(projectId: string) {
   const queryClient = useQueryClient();
   const supabase = useMemo(() => createClient(), []);
-  const uid = useRef(Math.random().toString(36).slice(2, 8)).current;
+  const uid = useId();
 
   // ── Fetch all tasks for a project ──────────────────────────────────────────
   const {
