@@ -33,7 +33,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Rutas protegidas — redirige a /login si no hay sesión
-  const protectedRoutes = ["/dashboard", "/projects"];
+  const protectedRoutes = ["/dashboard", "/projects", "/team", "/metrics", "/settings", "/profile", "/console"];
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
