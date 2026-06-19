@@ -81,7 +81,7 @@ export function useProjectMembers(projectId?: string) {
       )
       .subscribe((status) => {
         if (status === "CHANNEL_ERROR") {
-          console.error("Error en Realtime project-members");
+          console.warn("Realtime no disponible para project-members. Ejecuta la migration 004 en Supabase Dashboard.");
         }
       });
 

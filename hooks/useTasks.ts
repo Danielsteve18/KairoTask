@@ -85,7 +85,7 @@ export function useTasks(projectId: string) {
       )
       .subscribe((status) => {
         if (status === "CHANNEL_ERROR") {
-          console.error("Error en Realtime tasks");
+          console.warn("Realtime no disponible para tasks. Ejecuta la migration 004 en Supabase Dashboard.");
         }
       });
 

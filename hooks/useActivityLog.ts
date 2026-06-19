@@ -102,7 +102,7 @@ export function useActivityLog(projectId: string) {
       )
       .subscribe((status) => {
         if (status === "CHANNEL_ERROR") {
-          console.error("Error en Realtime activity-log");
+          console.warn("Realtime no disponible para activity-log. Ejecuta la migration 004 en Supabase Dashboard.");
         }
       });
 

@@ -74,7 +74,7 @@ export function useTaskComments(taskId: string) {
       )
       .subscribe((status) => {
         if (status === "CHANNEL_ERROR") {
-          console.error("Error en Realtime comments");
+          console.warn("Realtime no disponible para comments. Ejecuta la migration 004 en Supabase Dashboard.");
         }
       });
 

@@ -100,8 +100,30 @@ create trigger on_task_activity
   for each row execute function public.log_task_activity();
 
 -- 4. Agregar tablas a la publicación Realtime de Supabase
--- (requerido para que postgres_changes funcione en todas)
-alter publication supabase_realtime add table public.tasks;
-alter publication supabase_realtime add table public.project_members;
-alter publication supabase_realtime add table public.task_comments;
-alter publication supabase_realtime add table public.activity_log;
+-- (requerido para que postgres_changes funcione)
+-- Nota: ejecutar este bloque en el SQL Editor de Supabase Dashboard
+-- si aparece CHANNEL_ERROR en consola del navegador.
+do $$
+begin
+  -- Crear la publicación si no existe (seguro para idempotencia)
+  if not exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+    create publication supabase_realtime;
+  end if;
+end $$;
+
+-- Agregar tablas individualmente con manejo de "already a member"
+do $$
+declare
+  tbl text;
+  tables text[] := array['tasks', 'project_members', 'task_comments', 'activity_log'];
+begin
+  foreach tbl in array tables
+  loop
+    begin
+      execute format('alter publication supabase_realtime add table public.%I', tbl);
+    exception
+      when duplicate_object then
+        null; -- ya era miembro, ignorar
+    end;
+  end loop;
+end $$;
