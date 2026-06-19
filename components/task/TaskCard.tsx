@@ -25,7 +25,7 @@ const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; bg: stri
   low:      { label: "Low",      color: "#94A3B8", bg: "#94A3B818", border: "#94A3B830" },
 };
 
-export function TaskCard({ task, isDragging = false }: { task: TaskItem; isDragging?: boolean }) {
+export function TaskCard({ task, isDragging = false, onClick }: { task: TaskItem; isDragging?: boolean; onClick?: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const priority = PRIORITY_CONFIG[task.priority];
 
@@ -36,6 +36,7 @@ export function TaskCard({ task, isDragging = false }: { task: TaskItem; isDragg
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       className="group rounded-xl border transition-all duration-200 cursor-grab active:cursor-grabbing overflow-hidden"
+      onClick={onClick}
       style={{
         background: isDragging ? "var(--dash-surface-hover)" : "var(--dash-bg)",
         borderColor: isDragging ? "rgba(34,197,94,0.4)" : "var(--dash-border)",

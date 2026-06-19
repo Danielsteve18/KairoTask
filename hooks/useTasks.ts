@@ -17,6 +17,16 @@ export interface Task {
   updated_at: string;
 }
 
+export interface UpdateTaskInput {
+  id: string;
+  title?: string;
+  description?: string | null;
+  status?: TaskStatus;
+  priority?: Priority;
+  assignee_id?: string | null;
+  tags?: string[];
+}
+
 export interface CreateTaskInput {
   project_id: string;
   title: string;
@@ -116,11 +126,78 @@ export function useTasks(projectId: string) {
     },
   });
 
+  // ── Update Task (full edit) ─────────────────────────────────────────────────
+  const updateTask = useMutation({
+    mutationFn: async (input: UpdateTaskInput) => {
+      const { id, ...updates } = input;
+      const { data, error } = await supabase
+        .from("tasks")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data as Task;
+    },
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks", projectId] });
+      const previousTasks = queryClient.getQueryData<Task[]>(["tasks", projectId]);
+
+      queryClient.setQueryData<Task[]>(["tasks", projectId], (old) =>
+        old ? old.map((t) => (t.id === input.id ? { ...t, ...input } : t)) : []
+      );
+
+      return { previousTasks };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(["tasks", projectId], context.previousTasks);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+    },
+  });
+
+  // ── Delete Task ──────────────────────────────────────────────────────────────
+  const deleteTask = useMutation({
+    mutationFn: async (taskId: string) => {
+      const { error } = await supabase
+        .from("tasks")
+        .delete()
+        .eq("id", taskId);
+
+      if (error) throw new Error(error.message);
+      return taskId;
+    },
+    onMutate: async (taskId) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks", projectId] });
+      const previousTasks = queryClient.getQueryData<Task[]>(["tasks", projectId]);
+
+      queryClient.setQueryData<Task[]>(["tasks", projectId], (old) =>
+        old ? old.filter((t) => t.id !== taskId) : []
+      );
+
+      return { previousTasks };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(["tasks", projectId], context.previousTasks);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+    },
+  });
+
   return {
     tasks: tasks ?? [],
     isLoading,
     error,
     createTask,
+    updateTask,
+    deleteTask,
     updateTaskStatus,
   };
 }
