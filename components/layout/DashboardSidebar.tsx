@@ -18,7 +18,7 @@ import { motion } from "framer-motion";
 const sidebarItems = [
   { name: "Proyectos", icon: FolderKanban, href: "/projects" },
   { name: "Equipo", icon: Users, href: "/team" },
-  { name: "Métricas", icon: Activity, href: "/metrics" },
+  { name: "Pomodoro", icon: Activity, href: "/metrics" },
   { name: "Consola", icon: TerminalSquare, href: "/console" },
   { name: "Ajustes", icon: Settings, href: "/settings" },
 ];
