@@ -2,6 +2,7 @@ import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { ThemeToggle } from "@/components/custom/ThemeToggle";
 import { DashboardBreadcrumb } from "@/components/layout/DashboardBreadcrumb";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { GlobalSearchModal } from "@/components/search/GlobalSearchModal";
 import { SearchTrigger } from "@/components/search/SearchTrigger";
 
@@ -36,6 +37,9 @@ export default function DashboardLayout({
                 Live
               </span>
             </div>
+
+            {/* Notifications */}
+            <NotificationBell />
 
             {/* Theme Toggle */}
             <ThemeToggle />
