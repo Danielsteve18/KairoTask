@@ -290,16 +290,16 @@ export default function ProjectsPage() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="flex -space-x-2">
-                        {project.members?.map((initials) => (
-                          <div
-                            key={initials}
-                            className="w-7 h-7 rounded-full border-2 flex items-center justify-center text-[10px] font-bold"
-                            style={{ borderColor: "var(--dash-bg)", background: "var(--dash-border)", color: "var(--dash-text-muted)" }}
-                          >
-                            {initials}
-                          </div>
-                        ))}
+                      <div className="flex items-center gap-1.5">
+                        <div
+                          className="w-7 h-7 rounded-full border-2 flex items-center justify-center text-[10px] font-bold"
+                          style={{ borderColor: "var(--dash-bg)", background: "var(--dash-border)", color: "var(--dash-text-muted)" }}
+                        >
+                          {project.memberCount ?? 1}
+                        </div>
+                        <span className="text-[10px] font-mono" style={{ color: "var(--dash-text-muted)" }}>
+                          miembros
+                        </span>
                       </div>
                       <div className="flex items-center gap-1 text-xs" style={{ color: "var(--dash-text-muted)" }}>
                         <span className="font-mono">{project.tasks?.done || 0}/{project.tasks?.total || 0} tareas</span>

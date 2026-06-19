@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 export interface Profile {
   id: string;
@@ -57,6 +59,31 @@ export function useProjectMembers(projectId?: string) {
     },
     enabled: !!projectId,
   });
+
+  useEffect(() => {
+    if (!projectId) return;
+
+    const channel = supabase
+      .channel(`project-members:${projectId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "project_members",
+          filter: `project_id=eq.${projectId}`,
+        },
+        (_payload: RealtimePostgresChangesPayload<{ id: string }>) => {
+          queryClient.invalidateQueries({ queryKey: ["project-members", projectId] });
+          queryClient.invalidateQueries({ queryKey: ["workspace-team"] });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [projectId, queryClient, supabase]);
 
   // ── Fetch Workspace Team Directory (all members in user's projects) ────────
   const {

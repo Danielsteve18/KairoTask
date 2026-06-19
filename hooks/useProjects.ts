@@ -10,9 +10,8 @@ export interface Project {
   color: string;
   owner_id: string;
   created_at: string;
-  // Estos campos vienen mockeados para la UI por ahora, ya que no tenemos tablas de tareas y miembros aún
   tasks: { total: number; done: number };
-  members: string[];
+  memberCount: number;
 }
 
 export function useProjects() {
@@ -30,11 +29,37 @@ export function useProjects() {
 
       if (error) throw new Error(error.message);
 
-      // Mapeamos para añadir los campos mockeados necesarios por la UI temporalmente
+      const projectIds = (data as Project[]).map((p) => p.id);
+      if (projectIds.length === 0) return [];
+
+      const [taskCounts, memberCounts] = await Promise.all([
+        supabase
+          .from("tasks")
+          .select("project_id, status")
+          .in("project_id", projectIds),
+        supabase
+          .from("project_members")
+          .select("project_id")
+          .in("project_id", projectIds),
+      ]);
+
+      const taskMap = new Map<string, { total: number; done: number }>();
+      for (const t of taskCounts.data ?? []) {
+        const curr = taskMap.get(t.project_id) ?? { total: 0, done: 0 };
+        curr.total++;
+        if (t.status === "done") curr.done++;
+        taskMap.set(t.project_id, curr);
+      }
+
+      const memberMap = new Map<string, number>();
+      for (const m of memberCounts.data ?? []) {
+        memberMap.set(m.project_id, (memberMap.get(m.project_id) ?? 0) + 1);
+      }
+
       return (data as Project[]).map((p) => ({
         ...p,
-        tasks: { total: 0, done: 0 },
-        members: ["U"],
+        tasks: taskMap.get(p.id) ?? { total: 0, done: 0 },
+        memberCount: memberMap.get(p.id) ?? 1,
       }));
     },
   });
