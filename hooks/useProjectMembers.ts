@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
@@ -27,6 +27,7 @@ export interface ProjectMember {
 export function useProjectMembers(projectId?: string) {
   const queryClient = useQueryClient();
   const supabase = useMemo(() => createClient(), []);
+  const uid = useRef(Math.random().toString(36).slice(2, 8)).current;
 
   // ── Fetch Members of a Single Project ───────────────────────────────────────
   const {
@@ -64,7 +65,7 @@ export function useProjectMembers(projectId?: string) {
     if (!projectId) return;
 
     const channel = supabase
-      .channel(`project-members:${projectId}`)
+      .channel(`project-members:${projectId}:${uid}`)
       .on(
         "postgres_changes",
         {
