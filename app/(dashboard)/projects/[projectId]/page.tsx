@@ -11,6 +11,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { useTasks } from "@/hooks/useTasks";
+import { useProjectMembers } from "@/hooks/useProjectMembers";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface ProjectMeta {
@@ -20,6 +21,7 @@ interface ProjectMeta {
   status: string;
   progress: number;
   color: string;
+  owner_id: string;
 }
 
 type PanelId = "activity" | "members" | "settings" | null;
@@ -75,7 +77,15 @@ export default function ProjectPage({
   const [fetchError, setFetchError]     = useState<string | null>(null);
   const [activePanel, setActivePanel]   = useState<PanelId>(null);
   const [userEmail, setUserEmail]       = useState<string>("");
+  const [currentUserId, setCurrentUserId] = useState<string>("");
+  const [ownerEmail, setOwnerEmail]     = useState<string>("");
+  const [ownerName, setOwnerName]       = useState<string>("");
   const panelRef                        = useRef<HTMLDivElement>(null);
+
+  // Invite states
+  const [inviteEmail, setInviteEmail]     = useState("");
+  const [inviteError, setInviteError]     = useState<string | null>(null);
+  const [inviteSuccess, setInviteSuccess] = useState(false);
 
   // Settings form state
   const [settingsName, setSettingsName]         = useState("");
@@ -85,8 +95,32 @@ export default function ProjectPage({
   const [isSaving, setIsSaving]                 = useState(false);
   const [saveError, setSaveError]               = useState<string | null>(null);
 
-  // Tasks (shared cache with KanbanBoard via TanStack Query)
+  // Tasks & Members Hooks
   const { tasks } = useTasks(projectId);
+  const {
+    members,
+    isLoadingMembers,
+    addMember,
+    updateMemberRole,
+    removeMember,
+  } = useProjectMembers(projectId);
+
+  const isOwner = project?.owner_id === currentUserId;
+
+  const handleInviteMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail.trim()) return;
+    setInviteError(null);
+    setInviteSuccess(false);
+    try {
+      await addMember.mutateAsync({ email: inviteEmail.trim() });
+      setInviteEmail("");
+      setInviteSuccess(true);
+      setTimeout(() => setInviteSuccess(false), 3000);
+    } catch (err: any) {
+      setInviteError(err.message || "Error al invitar al miembro.");
+    }
+  };
 
   const togglePanel = (panel: PanelId) =>
     setActivePanel((prev) => (prev === panel ? null : panel));
@@ -114,7 +148,7 @@ export default function ProjectPage({
       const [{ data: proj, error: projErr }, { data: { user } }] = await Promise.all([
         supabase
           .from("projects")
-          .select("id, name, description, status, progress, color")
+          .select("id, name, description, status, progress, color, owner_id")
           .eq("id", projectId)
           .single(),
         supabase.auth.getUser(),
@@ -130,8 +164,22 @@ export default function ProjectPage({
         setSettingsDesc(proj.description ?? "");
         setSettingsStatus(proj.status);
         setSettingsColor(proj.color);
+
+        // Fetch owner details
+        if (proj.owner_id) {
+          const { data: oProfile } = await supabase
+            .from("profiles")
+            .select("email, full_name")
+            .eq("id", proj.owner_id)
+            .single();
+          if (oProfile && !cancelled) {
+            setOwnerEmail(oProfile.email);
+            setOwnerName(oProfile.full_name || "");
+          }
+        }
       }
       setUserEmail(user?.email ?? "");
+      setCurrentUserId(user?.id ?? "");
       setIsLoading(false);
     }
 
@@ -353,35 +401,150 @@ export default function ProjectPage({
                     </div>
 
                     <div className="p-4 space-y-4">
-                      {/* Current user */}
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-9 h-9 rounded-full border-2 flex items-center justify-center shrink-0"
-                          style={{ borderColor: accentColor, background: accentColor + "20" }}
-                        >
-                          <UserCircle className="w-5 h-5" style={{ color: accentColor }} />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-semibold truncate" style={{ color: "var(--dash-text)" }}>
-                            {userEmail || "Tú"}
-                          </p>
-                          <span
-                            className="text-[10px] font-mono px-1.5 py-0.5 rounded-full border"
-                            style={{ color: accentColor, borderColor: accentColor + "40", background: accentColor + "15" }}
+                      {/* Owner list item */}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className="w-9 h-9 rounded-full border-2 flex items-center justify-center shrink-0"
+                            style={{ borderColor: accentColor, background: accentColor + "20" }}
                           >
-                            Dueño
-                          </span>
+                            <UserCircle className="w-5 h-5" style={{ color: accentColor }} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold truncate" style={{ color: "var(--dash-text)" }}>
+                              {ownerName || ownerEmail || "Dueño"}
+                            </p>
+                            <p className="text-[10px] truncate" style={{ color: "var(--dash-text-muted)" }}>
+                              {ownerEmail}
+                            </p>
+                          </div>
                         </div>
+                        <span
+                          className="text-[10px] font-mono px-1.5 py-0.5 rounded-full border shrink-0"
+                          style={{ color: accentColor, borderColor: accentColor + "40", background: accentColor + "15" }}
+                        >
+                          Dueño
+                        </span>
                       </div>
 
-                      {/* Invite CTA */}
-                      <button
-                        disabled
-                        className="w-full py-2 rounded-lg border-2 border-dashed text-xs font-mono transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                        style={{ borderColor: "var(--dash-border)", color: "var(--dash-text-muted)" }}
-                      >
-                        + Invitar colaborador — próximamente
-                      </button>
+                      {/* Collaborators list */}
+                      <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
+                        {isLoadingMembers ? (
+                          <div className="flex items-center justify-center py-4">
+                            <Loader2 className="w-4 h-4 animate-spin" style={{ color: accentColor }} />
+                          </div>
+                        ) : members.length === 0 ? (
+                          <p className="text-[10px] font-mono text-center" style={{ color: "var(--dash-text-muted)" }}>
+                            No hay colaboradores agregados.
+                          </p>
+                        ) : (
+                          members.map((member) => (
+                            <div key={member.id} className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div
+                                  className="w-8 h-8 rounded-full border flex items-center justify-center shrink-0"
+                                  style={{ borderColor: "var(--dash-border)", background: "var(--dash-surface-hover)" }}
+                                >
+                                  <span className="text-[10px] font-mono text-center">
+                                    {(member.profile?.full_name || member.profile?.email || "C")[0].toUpperCase()}
+                                  </span>
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-xs font-semibold truncate" style={{ color: "var(--dash-text)" }}>
+                                    {member.profile?.full_name || member.profile?.email}
+                                  </p>
+                                  <p className="text-[10px] truncate" style={{ color: "var(--dash-text-muted)" }}>
+                                    {member.profile?.email}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {isOwner ? (
+                                  <>
+                                    <select
+                                      value={member.role}
+                                      onChange={async (e) => {
+                                        try {
+                                          await updateMemberRole.mutateAsync({
+                                            memberId: member.id,
+                                            role: e.target.value as any,
+                                          });
+                                        } catch (err: any) {
+                                          alert(err.message);
+                                        }
+                                      }}
+                                      className="text-[10px] font-mono bg-[#020617] border rounded px-1 py-0.5 outline-none cursor-pointer"
+                                      style={{ borderColor: "var(--dash-border)", color: "var(--dash-text-muted)" }}
+                                    >
+                                      <option value="collaborator">Colab.</option>
+                                      <option value="viewer">Lector</option>
+                                    </select>
+                                    <button
+                                      onClick={async () => {
+                                        if (confirm(`¿Remover a ${member.profile?.email} del proyecto?`)) {
+                                          try {
+                                            await removeMember.mutateAsync(member.id);
+                                          } catch (err: any) {
+                                            alert(err.message);
+                                          }
+                                        }
+                                      }}
+                                      className="p-1 rounded text-red-400 hover:bg-red-400/10 transition-colors"
+                                      title="Remover"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <span className="text-[10px] font-mono text-slate-500 uppercase">
+                                    {member.role === "collaborator" ? "Colab." : "Lector"}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      {/* Invite form (only visible to project owner) */}
+                      {isOwner && (
+                        <form onSubmit={handleInviteMember} className="pt-3 border-t space-y-2" style={{ borderColor: "var(--dash-border)" }}>
+                          <p className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--dash-text-muted)" }}>
+                            Invitar nuevo miembro
+                          </p>
+                          <div className="flex gap-2">
+                            <input
+                              type="email"
+                              value={inviteEmail}
+                              onChange={(e) => setInviteEmail(e.target.value)}
+                              placeholder="email@dominio.com"
+                              className="flex-1 rounded-lg px-3 py-1.5 text-xs outline-none border transition-all duration-200 min-w-0"
+                              style={{
+                                background: "var(--dash-bg)",
+                                borderColor: "var(--dash-border)",
+                                color: "var(--dash-text)",
+                              }}
+                              onFocus={e => (e.target.style.borderColor = accentColor)}
+                              onBlur={e => (e.target.style.borderColor = "var(--dash-border)")}
+                            />
+                            <button
+                              type="submit"
+                              disabled={addMember.isPending}
+                              className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all disabled:opacity-50"
+                              style={{ background: accentColor, color: "#020617" }}
+                            >
+                              {addMember.isPending ? "Añadiendo..." : "Añadir"}
+                            </button>
+                          </div>
+                          {inviteError && (
+                            <p className="text-[10px] text-red-400 font-mono mt-1 leading-normal">{inviteError}</p>
+                          )}
+                          {inviteSuccess && (
+                            <p className="text-[10px] text-green-400 font-mono mt-1">¡Invitación agregada con éxito!</p>
+                          )}
+                        </form>
+                      )}
                     </div>
                   </motion.div>
                 )}
