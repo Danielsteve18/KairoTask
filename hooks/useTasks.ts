@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import type { TaskStatus, Priority } from "@/components/task/TaskCard";
 
 export interface Task {
@@ -24,6 +26,7 @@ export interface UpdateTaskInput {
   status?: TaskStatus;
   priority?: Priority;
   assignee_id?: string | null;
+  due_date?: string | null;
   tags?: string[];
 }
 
@@ -61,6 +64,30 @@ export function useTasks(projectId: string) {
     },
     enabled: !!projectId,
   });
+
+  useEffect(() => {
+    if (!projectId) return;
+
+    const channel = supabase
+      .channel(`tasks:${projectId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "tasks",
+          filter: `project_id=eq.${projectId}`,
+        },
+        (_payload: RealtimePostgresChangesPayload<{ id: string }>) => {
+          queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [projectId, queryClient, supabase]);
 
   // ── Create Task ─────────────────────────────────────────────────────────────
   const createTask = useMutation({

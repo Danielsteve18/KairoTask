@@ -51,6 +51,7 @@ export function CreateTaskModal({
   const [priority, setPriority]     = useState<Priority>("medium");
   const [status, setStatus]         = useState<TaskStatus>(defaultStatus);
   const [tagsInput, setTagsInput]   = useState("");
+  const [dueDate, setDueDate]       = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError]           = useState<string | null>(null);
   const [assigneeId, setAssigneeId] = useState<string>("");
@@ -66,6 +67,7 @@ export function CreateTaskModal({
       setPriority("medium");
       setStatus(defaultStatus);
       setTagsInput("");
+      setDueDate("");
       setAssigneeId("");
       setError(null);
       setIsSubmitting(false);
@@ -100,6 +102,7 @@ export function CreateTaskModal({
         priority,
         status,
         tags,
+        due_date: dueDate || null,
         assignee_id: assigneeId || null,
       });
       onClose();
@@ -280,6 +283,27 @@ export function CreateTaskModal({
                       background:  "var(--dash-bg)",
                       borderColor: "var(--dash-border)",
                       color:       "var(--dash-text)",
+                    }}
+                    onFocus={(e) => (e.currentTarget.style.borderColor = "#22C55E")}
+                    onBlur={(e)  => (e.currentTarget.style.borderColor = "var(--dash-border)")}
+                  />
+                </div>
+
+                {/* Due Date */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-mono uppercase tracking-widest" style={{ color: "var(--dash-text-muted)" }}>
+                    Fecha límite
+                  </label>
+                  <input
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-lg border text-sm outline-none transition-all font-mono"
+                    style={{
+                      background:   "var(--dash-bg)",
+                      borderColor:  "var(--dash-border)",
+                      color:        "var(--dash-text)",
+                      colorScheme:  "dark",
                     }}
                     onFocus={(e) => (e.currentTarget.style.borderColor = "#22C55E")}
                     onBlur={(e)  => (e.currentTarget.style.borderColor = "var(--dash-border)")}
