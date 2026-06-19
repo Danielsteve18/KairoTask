@@ -80,6 +80,16 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Dashboard dev-centric palette - Light mode */
+  --dash-bg: #f4f4f5;
+  --dash-surface: #ffffff;
+  --dash-surface-hover: #f1f5f9;
+  --dash-border: rgba(0,0,0,0.08);
+  --dash-sidebar-bg: #fafafa;
+  --dash-text: #09090b;
+  --dash-text-muted: #71717a;
+  --dash-accent: #22C55E;
 }
 
 .dark {
@@ -114,6 +124,16 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Dashboard dev-centric palette - Dark mode (OLED) */
+  --dash-bg: #000000;
+  --dash-surface: #09090b;
+  --dash-surface-hover: rgba(255,255,255,0.04);
+  --dash-border: rgba(255,255,255,0.10);
+  --dash-sidebar-bg: #09090b;
+  --dash-text: #f8fafc;
+  --dash-text-muted: #475569;
+  --dash-accent: #22C55E;
 }
 
 @layer base {
@@ -122,5 +142,16 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
