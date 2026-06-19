@@ -253,6 +253,14 @@ export default function Home() {
                 <li><a href="https://github.com/Danielsteve18/KairoTask" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Código Fuente</a></li>
               </ul>
             </div>
+
+            <div>
+              <h4 className="font-bold text-foreground mb-4">Legal</h4>
+              <ul className="space-y-3">
+                <li><Link href="/terms" className="hover:text-foreground transition-colors">Términos de Uso</Link></li>
+                <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacidad</Link></li>
+              </ul>
+            </div>
           </div>
           
           <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm">

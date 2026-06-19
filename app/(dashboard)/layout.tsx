@@ -3,6 +3,7 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import { ThemeToggle } from "@/components/custom/ThemeToggle";
 import { DashboardBreadcrumb } from "@/components/layout/DashboardBreadcrumb";
 import { GlobalSearchModal } from "@/components/search/GlobalSearchModal";
+import { SearchTrigger } from "@/components/search/SearchTrigger";
 
 export default function DashboardLayout({
   children,
@@ -25,24 +26,7 @@ export default function DashboardLayout({
           <DashboardBreadcrumb />
 
           {/* Search trigger */}
-          <button
-            onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { metaKey: true, key: "k" }))}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all hover:opacity-80 mx-3"
-            style={{
-              borderColor: "var(--dash-border)",
-              color: "var(--dash-text-muted)",
-              background: "var(--dash-bg)",
-            }}
-          >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-            <span className="hidden sm:inline text-[10px] uppercase tracking-wider">Buscar</span>
-            <kbd className="hidden md:inline-flex text-[9px] px-1 py-0.5 rounded border" style={{ borderColor: "var(--dash-border)" }}>
-              {navigator.platform.includes("Mac") ? "⌘K" : "Ctrl+K"}
-            </kbd>
-          </button>
+          <SearchTrigger />
 
           <div className="ml-auto flex items-center gap-3">
             {/* Status indicator */}
