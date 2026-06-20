@@ -45,6 +45,9 @@ export default function ProfilePage() {
     const { error: err } = await supabase.auth.updateUser({
       data: { full_name: fullName },
     });
+    if (!err) {
+      await supabase.from("profiles").update({ full_name: fullName }).eq("id", userId);
+    }
     setSaving(false);
     if (err) {
       setError("Error al guardar los cambios. Intenta de nuevo.");

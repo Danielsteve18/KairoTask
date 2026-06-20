@@ -3,38 +3,8 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Github, Linkedin, UserCheck, Terminal } from "lucide-react";
-
-// ─── ASCII mascots ────────────────────────────────────────────────────────────
-const snakeAscii = `
-  /\\_/\\  
- ( o.o ) 
-  > ^ <  
- /|   |\\
-`;
-
-const bugAscii = `
-  (o)(o)
- /  ||  \\
-|  /||\\  |
- \\_/  \\_/
-`;
-
-const robotAscii = `
- .-------.
- | O   O |
- |  ---  |
- |_______|
-  /|   |\\
-`;
-
-const asciiArt = `
- ██╗  ██╗ █████╗ ██╗██████╗  ██████╗ 
- ██║ ██╔╝██╔══██╗██║██╔══██╗██╔═══██╗
- █████╔╝ ███████║██║██████╔╝██║   ██║
- ██╔═██╗ ██╔══██║██║██╔══██╗██║   ██║
- ██║  ██╗██║  ██║██║██║  ██║╚██████╔╝
- ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═╝ ╚═════╝ 
-`;
+import { AsciiAnimation } from "@/components/ascii/AsciiAnimation";
+import { skullFrames } from "@/lib/ascii/frames";
 
 const team = [
   {
@@ -44,9 +14,7 @@ const team = [
     photo: "/team/daniel.png",
     gradient: "from-blue-500 to-indigo-600",
     accent: "text-blue-500",
-    mascot: snakeAscii,
     mascotLabel: "~snake.exe",
-    mascotColor: "text-blue-400/70",
   },
   {
     name: "Luisa Fernanda Lucio",
@@ -55,9 +23,7 @@ const team = [
     photo: "/team/luisa.png",
     gradient: "from-violet-500 to-purple-600",
     accent: "text-violet-500",
-    mascot: bugAscii,
     mascotLabel: "~bug-hunter.sh",
-    mascotColor: "text-violet-400/70",
   },
   {
     name: "Didier Andres Congo",
@@ -66,16 +32,13 @@ const team = [
     photo: "/team/didier.png",
     gradient: "from-emerald-500 to-teal-600",
     accent: "text-emerald-500",
-    mascot: robotAscii,
     mascotLabel: "~autobot.ts",
-    mascotColor: "text-emerald-400/70",
   },
 ];
 
 export const TeamSection = () => {
   return (
     <section className="py-24 md:py-36 relative overflow-hidden bg-background border-t border-border">
-      {/* Background grid */}
       <div
         className="absolute inset-0 opacity-[0.025] dark:opacity-[0.04] pointer-events-none"
         style={{
@@ -84,8 +47,18 @@ export const TeamSection = () => {
         }}
       />
 
+      {/* Fondo animado ASCII sutil */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.03] dark:opacity-[0.06] select-none">
+        <div className="absolute -right-20 top-1/2 -translate-y-1/2 scale-150">
+          <AsciiAnimation
+            frames={skullFrames}
+            fps={6}
+            className="text-foreground leading-none"
+          />
+        </div>
+      </div>
+
       <div className="container mx-auto px-6 md:px-12 relative z-10">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -106,9 +79,7 @@ export const TeamSection = () => {
           </p>
         </motion.div>
 
-        {/* Main layout: cards left, panel right */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* ── Team cards ── */}
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
             {team.map((member, idx) => (
               <motion.div
@@ -119,11 +90,8 @@ export const TeamSection = () => {
                 transition={{ duration: 0.55, delay: idx * 0.12, ease: [0.22, 1, 0.36, 1] }}
                 className="group rounded-2xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative flex flex-col p-6 items-center text-center"
               >
-                
-                {/* Subtle background glow on hover */}
                 <div className={`absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500 bg-gradient-to-br ${member.gradient} pointer-events-none`} />
 
-                {/* Avatar */}
                 <div
                   className={`relative w-20 h-20 rounded-xl bg-gradient-to-br ${member.gradient} flex items-center justify-center text-white text-xl font-black mb-4 shadow-md overflow-hidden`}
                 >
@@ -146,7 +114,6 @@ export const TeamSection = () => {
                   {member.role}
                 </p>
 
-                {/* Social links */}
                 <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mb-2">
                   <a href="#" className="p-1 rounded-lg hover:bg-secondary transition-colors" aria-label="GitHub">
                     <Github className="w-3.5 h-3.5 text-muted-foreground" />
@@ -156,20 +123,22 @@ export const TeamSection = () => {
                   </a>
                 </div>
 
-                {/* Raw ASCII Mascot embedded directly in the card bottom */}
-                <div className={`pt-2 flex flex-col items-center justify-center w-full border-t border-border/40`}>
+                <div className="pt-2 flex flex-col items-center justify-center w-full border-t border-border/40">
                   <span className={`text-[9px] font-mono mb-1 opacity-50 ${member.accent}`}>
                     {member.mascotLabel}
                   </span>
-                  <pre className={`font-mono text-[10px] leading-tight select-none ${member.accent} opacity-60 group-hover:opacity-100 transition-opacity`}>
-                    {member.mascot}
-                  </pre>
+                  <div className="opacity-40 group-hover:opacity-100 transition-opacity duration-300">
+                    <AsciiAnimation
+                      frames={skullFrames.slice(0, 6)}
+                      fps={4}
+                      className={`text-[6px] leading-tight ${member.accent}`}
+                    />
+                  </div>
                 </div>
               </motion.div>
             ))}
           </div>
 
-          {/* ── Right panel: ASCII + Advisor ── */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -177,7 +146,6 @@ export const TeamSection = () => {
             transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="lg:col-span-5 flex flex-col gap-4 lg:pt-0"
           >
-            {/* ASCII art panel */}
             <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5 overflow-hidden">
               <div className="flex items-center gap-1.5 mb-3">
                 <span className="w-2 h-2 rounded-full bg-red-500/80" />
@@ -188,9 +156,13 @@ export const TeamSection = () => {
                   <span className="text-zinc-500 text-[10px] font-mono">team.ascii</span>
                 </div>
               </div>
-              <pre className="font-mono text-green-400/70 text-[6px] leading-tight overflow-hidden select-none">
-                {asciiArt}
-              </pre>
+              <div className="flex justify-center">
+                <AsciiAnimation
+                  frames={skullFrames}
+                  fps={10}
+                  className="text-green-400/70 text-[6px] leading-tight overflow-hidden select-none"
+                />
+              </div>
               <div className="mt-3 font-mono text-[10px] text-green-400/50 space-y-0.5">
                 <div>{"> Universidad Del Pacífico — 2025"}</div>
                 <div>{"> members: 3 | commits: 400+ | ☕ ∞"}</div>
@@ -198,7 +170,6 @@ export const TeamSection = () => {
               </div>
             </div>
 
-            {/* Advisor card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
