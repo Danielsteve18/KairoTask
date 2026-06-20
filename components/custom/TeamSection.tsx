@@ -134,20 +134,31 @@ export const TeamSection = () => {
 
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
                   <motion.svg
-                    viewBox="0 0 100 240"
-                    className="w-20 h-48 md:w-24 md:h-56 text-green-500"
+                    viewBox="0 0 120 135"
+                    className="w-28 h-32 md:w-32 md:h-[148px] text-green-500"
                     preserveAspectRatio="xMidYMid meet"
-                    animate={{ opacity: [0.1, 0.2, 0.1] }}
+                    animate={{ opacity: [0.12, 0.22, 0.12] }}
                     transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    <g fill="currentColor">
-                      <ellipse cx="50" cy="26" rx="15" ry="16" />
-                      <path d="M 29 40 C 28 6, 72 6, 71 40" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.5" />
-                      <path d="M 30 54 L 70 54 C 74 100, 72 140, 72 155 L 28 155 C 28 140, 26 100, 30 54 Z" />
-                      <path d="M 30 60 L 16 100" stroke="currentColor" strokeWidth="9" strokeLinecap="round" />
-                      <path d="M 70 60 L 84 100" stroke="currentColor" strokeWidth="9" strokeLinecap="round" />
-                      <path d="M 33 155 L 24 222" stroke="currentColor" strokeWidth="10" strokeLinecap="round" />
-                      <path d="M 67 155 L 76 222" stroke="currentColor" strokeWidth="10" strokeLinecap="round" />
+                    <defs>
+                      <filter id="screenGlow">
+                        <feGaussianBlur stdDeviation="2" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                    </defs>
+                    <g fill="currentColor" opacity="0.18">
+                      <rect x="8" y="2" width="104" height="80" rx="5" />
+                      <path d="M 52 82 L 68 82 L 65 92 L 55 92 Z" />
+                      <rect x="44" y="92" width="32" height="6" rx="2" />
+                      <rect x="22" y="105" width="76" height="22" rx="4" />
+                    </g>
+                    <g fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.3">
+                      <rect x="8" y="2" width="104" height="80" rx="5" />
+                      <rect x="16" y="9" width="88" height="62" rx="3" filter="url(#screenGlow)" strokeWidth="2" opacity="0.6" />
+                      <line x1="30" y1="113" x2="62" y2="113" />
+                      <line x1="30" y1="118" x2="66" y2="118" />
+                      <line x1="30" y1="123" x2="58" y2="123" />
+                      <circle cx="88" cy="6" r="1.5" fill="currentColor" opacity="0.5" />
                     </g>
                   </motion.svg>
                 </div>
