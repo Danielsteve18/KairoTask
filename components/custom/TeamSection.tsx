@@ -2,39 +2,8 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Github, Linkedin, UserCheck, Terminal } from "lucide-react";
-
-// ─── ASCII mascots ────────────────────────────────────────────────────────────
-const snakeAscii = `
-  /\\_/\\  
- ( o.o ) 
-  > ^ <  
- /|   |\\
-`;
-
-const bugAscii = `
-  (o)(o)
- /  ||  \\
-|  /||\\  |
- \\_/  \\_/
-`;
-
-const robotAscii = `
- .-------.
- | O   O |
- |  ---  |
- |_______|
-  /|   |\\
-`;
-
-const asciiArt = `
- ██╗  ██╗ █████╗ ██╗██████╗  ██████╗ 
- ██║ ██╔╝██╔══██╗██║██╔══██╗██╔═══██╗
- █████╔╝ ███████║██║██████╔╝██║   ██║
- ██╔═██╗ ██╔══██║██║██╔══██╗██║   ██║
- ██║  ██╗██║  ██║██║██║  ██║╚██████╔╝
- ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═╝ ╚═════╝ 
-`;
+import { Github, Linkedin, UserCheck, Terminal, Cpu } from "lucide-react";
+import { MatrixRain } from "@/components/ascii/MatrixRain";
 
 const team = [
   {
@@ -44,9 +13,6 @@ const team = [
     photo: "/team/daniel.png",
     gradient: "from-blue-500 to-indigo-600",
     accent: "text-blue-500",
-    mascot: snakeAscii,
-    mascotLabel: "~snake.exe",
-    mascotColor: "text-blue-400/70",
   },
   {
     name: "Luisa Fernanda Lucio",
@@ -55,9 +21,6 @@ const team = [
     photo: "/team/luisa.png",
     gradient: "from-violet-500 to-purple-600",
     accent: "text-violet-500",
-    mascot: bugAscii,
-    mascotLabel: "~bug-hunter.sh",
-    mascotColor: "text-violet-400/70",
   },
   {
     name: "Didier Andres Congo",
@@ -66,16 +29,12 @@ const team = [
     photo: "/team/didier.png",
     gradient: "from-emerald-500 to-teal-600",
     accent: "text-emerald-500",
-    mascot: robotAscii,
-    mascotLabel: "~autobot.ts",
-    mascotColor: "text-emerald-400/70",
   },
 ];
 
 export const TeamSection = () => {
   return (
     <section className="py-24 md:py-36 relative overflow-hidden bg-background border-t border-border">
-      {/* Background grid */}
       <div
         className="absolute inset-0 opacity-[0.025] dark:opacity-[0.04] pointer-events-none"
         style={{
@@ -85,7 +44,6 @@ export const TeamSection = () => {
       />
 
       <div className="container mx-auto px-6 md:px-12 relative z-10">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -106,80 +64,60 @@ export const TeamSection = () => {
           </p>
         </motion.div>
 
-        {/* Main layout: cards left, panel right */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* ── Team cards ── */}
-          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {team.map((member, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.55, delay: idx * 0.12, ease: [0.22, 1, 0.36, 1] }}
-                className="group rounded-2xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative flex flex-col p-6 items-center text-center"
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-2">
+          {team.map((member, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.55, delay: idx * 0.12, ease: [0.22, 1, 0.36, 1] }}
+              className="group rounded-2xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative flex flex-col p-6 items-center text-center lg:row-span-2"
+            >
+              <div className={`absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500 bg-gradient-to-br ${member.gradient} pointer-events-none`} />
+
+              <div
+                className={`relative w-20 h-20 rounded-xl bg-gradient-to-br ${member.gradient} flex items-center justify-center text-white text-xl font-black mb-4 shadow-md overflow-hidden`}
               >
-                
-                {/* Subtle background glow on hover */}
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500 bg-gradient-to-br ${member.gradient} pointer-events-none`} />
+                <span className="absolute inset-0 flex items-center justify-center select-none">
+                  {member.init}
+                </span>
+                <Image
+                  src={member.photo}
+                  alt={`Foto de ${member.name}`}
+                  fill
+                  className="object-cover object-top"
+                  sizes="80px"
+                />
+              </div>
 
-                {/* Avatar */}
-                <div
-                  className={`relative w-20 h-20 rounded-xl bg-gradient-to-br ${member.gradient} flex items-center justify-center text-white text-xl font-black mb-4 shadow-md overflow-hidden`}
-                >
-                  <span className="absolute inset-0 flex items-center justify-center select-none">
-                    {member.init}
-                  </span>
-                  <Image
-                    src={member.photo}
-                    alt={`Foto de ${member.name}`}
-                    fill
-                    className="object-cover object-top"
-                    sizes="80px"
-                  />
-                </div>
+              <h3 className="font-bold text-foreground text-sm leading-tight mb-1">
+                {member.name}
+              </h3>
+              <p className={`font-medium text-[11px] ${member.accent} mb-1`}>
+                {member.role}
+              </p>
 
-                <h3 className="font-bold text-foreground text-sm leading-tight mb-1">
-                  {member.name}
-                </h3>
-                <p className={`font-medium text-[11px] ${member.accent} mb-1`}>
-                  {member.role}
-                </p>
+              <div className="flex gap-3 mt-auto pt-4 border-t border-border/40 w-full justify-center opacity-80 group-hover:opacity-100 transition-opacity">
+                <a href="#" className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="GitHub">
+                  <Github className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                </a>
+                <a href="#" className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="LinkedIn">
+                  <Linkedin className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                </a>
+              </div>
+            </motion.div>
+          ))}
 
-                {/* Social links */}
-                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mb-2">
-                  <a href="#" className="p-1 rounded-lg hover:bg-secondary transition-colors" aria-label="GitHub">
-                    <Github className="w-3.5 h-3.5 text-muted-foreground" />
-                  </a>
-                  <a href="#" className="p-1 rounded-lg hover:bg-secondary transition-colors" aria-label="LinkedIn">
-                    <Linkedin className="w-3.5 h-3.5 text-muted-foreground" />
-                  </a>
-                </div>
-
-                {/* Raw ASCII Mascot embedded directly in the card bottom */}
-                <div className={`pt-2 flex flex-col items-center justify-center w-full border-t border-border/40`}>
-                  <span className={`text-[9px] font-mono mb-1 opacity-50 ${member.accent}`}>
-                    {member.mascotLabel}
-                  </span>
-                  <pre className={`font-mono text-[10px] leading-tight select-none ${member.accent} opacity-60 group-hover:opacity-100 transition-opacity`}>
-                    {member.mascot}
-                  </pre>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* ── Right panel: ASCII + Advisor ── */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-5 flex flex-col gap-4 lg:pt-0"
+            className="lg:col-span-2 lg:row-span-3"
           >
-            {/* ASCII art panel */}
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5 overflow-hidden">
-              <div className="flex items-center gap-1.5 mb-3">
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden h-full flex flex-col">
+              <div className="flex items-center gap-1.5 px-5 pt-4 pb-3 shrink-0">
                 <span className="w-2 h-2 rounded-full bg-red-500/80" />
                 <span className="w-2 h-2 rounded-full bg-yellow-500/80" />
                 <span className="w-2 h-2 rounded-full bg-green-500/80" />
@@ -188,35 +126,105 @@ export const TeamSection = () => {
                   <span className="text-zinc-500 text-[10px] font-mono">team.ascii</span>
                 </div>
               </div>
-              <pre className="font-mono text-green-400/70 text-[6px] leading-tight overflow-hidden select-none">
-                {asciiArt}
-              </pre>
-              <div className="mt-3 font-mono text-[10px] text-green-400/50 space-y-0.5">
-                <div>{"> Universidad Del Pacífico — 2025"}</div>
-                <div>{"> members: 3 | commits: 400+ | ☕ ∞"}</div>
-                <span className="inline-block w-2 h-3 bg-green-400/50 animate-pulse" />
+
+              <div className="relative border-y border-zinc-800/40 overflow-hidden flex-1 min-h-[300px]">
+                <MatrixRain className="absolute inset-0" />
+
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+                  <motion.svg
+                    viewBox="0 0 120 135"
+                    className="w-28 h-32 md:w-32 md:h-[148px] text-green-500"
+                    preserveAspectRatio="xMidYMid meet"
+                    animate={{ opacity: [0.12, 0.22, 0.12] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <defs>
+                      <filter id="screenGlow">
+                        <feGaussianBlur stdDeviation="2" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                    </defs>
+                    <g fill="currentColor" opacity="0.18">
+                      <rect x="8" y="2" width="104" height="80" rx="5" />
+                      <path d="M 52 82 L 68 82 L 65 92 L 55 92 Z" />
+                      <rect x="44" y="92" width="32" height="6" rx="2" />
+                      <rect x="22" y="105" width="76" height="22" rx="4" />
+                    </g>
+                    <g fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.3">
+                      <rect x="8" y="2" width="104" height="80" rx="5" />
+                      <rect x="16" y="9" width="88" height="62" rx="3" filter="url(#screenGlow)" strokeWidth="2" opacity="0.6" />
+                      <line x1="30" y1="113" x2="62" y2="113" />
+                      <line x1="30" y1="118" x2="66" y2="118" />
+                      <line x1="30" y1="123" x2="58" y2="123" />
+                      <circle cx="88" cy="6" r="1.5" fill="currentColor" opacity="0.5" />
+                    </g>
+                  </motion.svg>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between px-5 pb-4 pt-3 shrink-0 font-mono text-[10px] text-green-400/60">
+                <div className="flex items-center gap-2">
+                  <Cpu className="w-3 h-3 text-green-500/60" />
+                  <span>kairo.team — matrix v2.1</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span>members: 3</span>
+                  <span>commits: 400+</span>
+                  <span className="animate-pulse">●</span>
+                </div>
               </div>
             </div>
+          </motion.div>
 
-            {/* Advisor card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-2xl border border-border bg-card p-6 flex items-center gap-5 shadow-sm"
-            >
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0 shadow-md">
-                <UserCheck className="w-7 h-7 text-white" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="hidden lg:block lg:col-span-3 lg:row-start-3"
+          >
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm h-full flex flex-col">
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0 shadow-md">
+                  <UserCheck className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-0.5">
+                    Asesor de Proyecto
+                  </p>
+                  <h4 className="font-bold text-foreground text-base">Daniel Bustos</h4>
+                  <p className="text-[11px] text-muted-foreground">Universidad Del Pacífico</p>
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">
-                  Asesor de Proyecto
-                </p>
-                <h4 className="font-bold text-foreground text-lg">Daniel Bustos</h4>
-                <p className="text-xs text-muted-foreground mt-0.5">Universidad Del Pacífico</p>
+
+              <p className="text-xs text-muted-foreground/80 leading-relaxed mb-4 border-l-2 border-amber-400/50 pl-3 italic">
+                &ldquo;Guía al equipo en arquitectura de software, diseño de sistemas y buenas prácticas de desarrollo.&rdquo;
+              </p>
+
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="rounded-lg bg-secondary/50 px-3 py-2 text-center">
+                  <span className="block text-xs font-bold text-foreground">400+</span>
+                  <span className="text-[9px] text-muted-foreground">commits</span>
+                </div>
+                <div className="rounded-lg bg-secondary/50 px-3 py-2 text-center">
+                  <span className="block text-xs font-bold text-foreground">12</span>
+                  <span className="text-[9px] text-muted-foreground">sprints</span>
+                </div>
+                <div className="rounded-lg bg-secondary/50 px-3 py-2 text-center">
+                  <span className="block text-xs font-bold text-foreground">3</span>
+                  <span className="text-[9px] text-muted-foreground">devs</span>
+                </div>
               </div>
-            </motion.div>
+
+              <div className="flex gap-2 mt-auto pt-3 border-t border-border/40">
+                <a href="#" className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="GitHub">
+                  <Github className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                </a>
+                <a href="#" className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="LinkedIn">
+                  <Linkedin className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                </a>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>

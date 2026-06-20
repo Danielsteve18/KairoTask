@@ -8,8 +8,8 @@ import {
   DropResult,
 } from "@hello-pangea/dnd";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, MoreHorizontal, Loader2, ArrowRight, X, Check } from "lucide-react";
-import { TaskCard, TaskStatus } from "@/components/task/TaskCard";
+import { Plus, MoreHorizontal, Loader2, ArrowRight, X, Check, Search } from "lucide-react";
+import { TaskCard, TaskStatus, Priority } from "@/components/task/TaskCard";
 import { CreateTaskModal } from "@/components/task/CreateTaskModal";
 import { TaskDetailModal } from "@/components/task/TaskDetailModal";
 import { useTasks } from "@/hooks/useTasks";
@@ -40,8 +40,18 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
 
+  // Filters
+  const [searchQuery, setSearchQuery]   = useState("");
+  const [priorityFilter, setPriorityFilter] = useState<Priority | "all">("all");
+
+  const filteredTasks = tasks.filter((t) => {
+    const matchesSearch = !searchQuery || t.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesPriority = priorityFilter === "all" || t.priority === priorityFilter;
+    return matchesSearch && matchesPriority;
+  });
+
   const getColumnTasks = (colId: TaskStatus) =>
-    tasks.filter((t) => t.status === colId);
+    filteredTasks.filter((t) => t.status === colId);
 
   const openModalForColumn = (colId: TaskStatus) => {
     setModalStatus(colId);
@@ -103,8 +113,57 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     );
   }
 
+  const PRIORITY_OPTIONS: { value: Priority | "all"; label: string }[] = [
+    { value: "all",      label: "Todas" },
+    { value: "critical", label: "Critical" },
+    { value: "high",     label: "High" },
+    { value: "medium",   label: "Medium" },
+    { value: "low",      label: "Low" },
+  ];
+
   return (
     <div className="relative h-full flex flex-col">
+      {/* ── Filters bar ─────────────────────────────────────────────────── */ }
+      <div
+        className="flex items-center gap-3 px-6 py-3 border-b shrink-0"
+        style={{ borderColor: "var(--dash-border)" }}
+      >
+        <div className="relative flex-1 max-w-xs">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+            style={{ color: "var(--dash-text-muted)" }}
+          />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar tareas…"
+            className="w-full pl-9 pr-3 py-2 rounded-lg border text-xs font-mono outline-none transition-colors"
+            style={{
+              background: "var(--dash-bg)",
+              borderColor: "var(--dash-border)",
+              color: "var(--dash-text)",
+            }}
+          />
+        </div>
+        <div className="flex items-center gap-1">
+          {PRIORITY_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setPriorityFilter(opt.value)}
+              className="px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-medium transition-all"
+              style={{
+                background: priorityFilter === opt.value ? "var(--dash-accent)" : "transparent",
+                color: priorityFilter === opt.value ? "#020617" : "var(--dash-text-muted)",
+                border: `1px solid ${priorityFilter === opt.value ? "var(--dash-accent)" : "var(--dash-border)"}`,
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex gap-5 h-full overflow-x-auto pb-4 pr-2">
           {COLUMNS.map((col, colIndex) => {

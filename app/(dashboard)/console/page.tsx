@@ -1,4 +1,10 @@
-import { ComingSoon } from "@/components/layout/ComingSoon";
+import { Terminal } from "@/components/console/Terminal";
+
 export default function ConsolePage() {
-  return <ComingSoon title="Consola" command="console" description="Terminal integrada para operaciones avanzadas y scripting del workspace." />;
+  return (
+    <div className="h-full w-full overflow-hidden border-l"
+      style={{ borderColor: "var(--dash-border)" }}>
+      <Terminal />
+    </div>
+  );
 }

@@ -25,6 +25,9 @@ const registerSchema = z
       .regex(/[A-Z]/, "Debe contener al menos una mayúscula")
       .regex(/[0-9]/, "Debe contener al menos un número"),
     confirmPassword: z.string().min(1, "Confirma tu contraseña"),
+    acceptTerms: z.literal(true, {
+      message: "Debes aceptar los términos de uso",
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Las contraseñas no coinciden",
@@ -253,16 +256,37 @@ export function RegisterForm() {
         </div>
 
         {/* Términos */}
-        <p className="text-xs text-center text-[#475569] leading-relaxed">
-          Al crear una cuenta aceptas los{" "}
-          <a
-            href="#"
-            className="text-[#94A3B8] hover:text-[#F8FAFC] transition-colors duration-200 underline-offset-4 hover:underline"
-          >
-            términos de uso
-          </a>
-          .
-        </p>
+        <div className="space-y-2">
+          <label className="flex items-start gap-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              {...register("acceptTerms")}
+              className="mt-0.5 w-4 h-4 rounded border-white/20 bg-black text-[#22C55E] accent-[#22C55E] focus:ring-[#22C55E]/20 focus:ring-2 cursor-pointer"
+            />
+            <span className="text-xs text-[#475569] leading-relaxed select-none">
+              Acepto los{" "}
+              <a
+                href="/terms"
+                target="_blank"
+                className="text-[#94A3B8] hover:text-[#F8FAFC] transition-colors underline-offset-4 hover:underline"
+              >
+                términos de uso
+              </a>{" "}
+              y la{" "}
+              <a
+                href="/privacy"
+                target="_blank"
+                className="text-[#94A3B8] hover:text-[#F8FAFC] transition-colors underline-offset-4 hover:underline"
+              >
+                política de privacidad
+              </a>
+              .
+            </span>
+          </label>
+          {errors.acceptTerms && (
+            <p role="alert" className="text-xs text-red-400">{errors.acceptTerms.message}</p>
+          )}
+        </div>
       </form>
 
       <PasswordModal

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useId } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
@@ -22,7 +22,7 @@ export interface Comment {
 export function useTaskComments(taskId: string) {
   const queryClient = useQueryClient();
   const supabase = useMemo(() => createClient(), []);
-  const uid = useRef(Math.random().toString(36).slice(2, 8)).current;
+  const uid = useId();
 
   const {
     data: comments = [],

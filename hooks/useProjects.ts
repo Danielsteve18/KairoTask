@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 
@@ -16,7 +17,7 @@ export interface Project {
 
 export function useProjects() {
   const queryClient = useQueryClient();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   // Fetch Projects
   const { data: projects, isLoading, error } = useQuery({
@@ -64,6 +65,17 @@ export function useProjects() {
     },
   });
 
+  // Delete Project
+  const deleteProject = useMutation({
+    mutationFn: async (projectId: string) => {
+      const { error } = await supabase.from("projects").delete().eq("id", projectId);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+    },
+  });
+
   // Create Project
   const createProject = useMutation({
     mutationFn: async (newProject: { name: string; description?: string; color: string; owner_id: string }) => {
@@ -86,5 +98,6 @@ export function useProjects() {
     isLoading,
     error,
     createProject,
+    deleteProject,
   };
 }

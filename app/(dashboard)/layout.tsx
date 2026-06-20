@@ -2,6 +2,9 @@ import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { ThemeToggle } from "@/components/custom/ThemeToggle";
 import { DashboardBreadcrumb } from "@/components/layout/DashboardBreadcrumb";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { GlobalSearchModal } from "@/components/search/GlobalSearchModal";
+import { SearchTrigger } from "@/components/search/SearchTrigger";
 
 export default function DashboardLayout({
   children,
@@ -23,6 +26,9 @@ export default function DashboardLayout({
           {/* Breadcrumb Dinámico */}
           <DashboardBreadcrumb />
 
+          {/* Search trigger */}
+          <SearchTrigger />
+
           <div className="ml-auto flex items-center gap-3">
             {/* Status indicator */}
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#22C55E]/10 border border-[#22C55E]/20">
@@ -31,6 +37,9 @@ export default function DashboardLayout({
                 Live
               </span>
             </div>
+
+            {/* Notifications */}
+            <NotificationBell />
 
             {/* Theme Toggle */}
             <ThemeToggle />
@@ -45,6 +54,9 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+
+      {/* Global Search Modal (Cmd+K) */}
+      <GlobalSearchModal />
     </div>
   );
 }
