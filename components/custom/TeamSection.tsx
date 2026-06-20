@@ -183,16 +183,46 @@ export const TeamSection = () => {
             transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="lg:col-span-3 lg:row-start-3"
           >
-            <div className="rounded-2xl border border-border bg-card p-6 flex items-center gap-5 shadow-sm">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0 shadow-md">
-                <UserCheck className="w-7 h-7 text-white" />
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm h-full flex flex-col">
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0 shadow-md">
+                  <UserCheck className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-0.5">
+                    Asesor de Proyecto
+                  </p>
+                  <h4 className="font-bold text-foreground text-base">Daniel Bustos</h4>
+                  <p className="text-[11px] text-muted-foreground">Universidad Del Pacífico</p>
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">
-                  Asesor de Proyecto
-                </p>
-                <h4 className="font-bold text-foreground text-lg">Daniel Bustos</h4>
-                <p className="text-xs text-muted-foreground mt-0.5">Universidad Del Pacífico</p>
+
+              <p className="text-xs text-muted-foreground/80 leading-relaxed mb-4 border-l-2 border-amber-400/50 pl-3 italic">
+                &ldquo;Guía al equipo en arquitectura de software, diseño de sistemas y buenas prácticas de desarrollo.&rdquo;
+              </p>
+
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="rounded-lg bg-secondary/50 px-3 py-2 text-center">
+                  <span className="block text-xs font-bold text-foreground">400+</span>
+                  <span className="text-[9px] text-muted-foreground">commits</span>
+                </div>
+                <div className="rounded-lg bg-secondary/50 px-3 py-2 text-center">
+                  <span className="block text-xs font-bold text-foreground">12</span>
+                  <span className="text-[9px] text-muted-foreground">sprints</span>
+                </div>
+                <div className="rounded-lg bg-secondary/50 px-3 py-2 text-center">
+                  <span className="block text-xs font-bold text-foreground">3</span>
+                  <span className="text-[9px] text-muted-foreground">devs</span>
+                </div>
+              </div>
+
+              <div className="flex gap-2 mt-auto pt-3 border-t border-border/40">
+                <a href="#" className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="GitHub">
+                  <Github className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                </a>
+                <a href="#" className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="LinkedIn">
+                  <Linkedin className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                </a>
               </div>
             </div>
           </motion.div>
