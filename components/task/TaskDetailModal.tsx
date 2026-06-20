@@ -11,6 +11,7 @@ import type { TaskStatus, Priority } from "@/components/task/TaskCard";
 import type { Task, UpdateTaskInput } from "@/hooks/useTasks";
 import { useProjectMembers } from "@/hooks/useProjectMembers";
 import { CommentsSection } from "@/components/task/CommentsSection";
+import { TaskAttachments } from "@/components/task/TaskAttachments";
 
 interface TaskDetailModalProps {
   task: Task;
@@ -406,6 +407,10 @@ export function TaskDetailModal({
 
             {/* Comments */}
             <CommentsSection taskId={task.id} />
+
+            {/* Attachments */}
+            <div className="border-t" style={{ borderColor: "var(--dash-border)" }} />
+            <TaskAttachments taskId={task.id} />
 
             {/* Divider */}
             <div className="border-t" style={{ borderColor: "var(--dash-border)" }} />

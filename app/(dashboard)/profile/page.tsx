@@ -4,12 +4,15 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
 import { Save, Loader2, CheckCircle2, User, Mail, Calendar, Shield, Copy, Check } from "lucide-react";
+import { AvatarUpload } from "@/components/ui/AvatarUpload";
+import { uploadAvatar } from "@/lib/supabase/storage";
 
 export default function ProfilePage() {
   const [fullName, setFullName]     = useState("");
   const [email, setEmail]           = useState("");
   const [joinedAt, setJoinedAt]     = useState("");
   const [userId, setUserId]         = useState("");
+  const [avatarUrl, setAvatarUrl]   = useState<string | null>(null);
   const [loading, setLoading]       = useState(true);
   const [saving, setSaving]         = useState(false);
   const [saved, setSaved]           = useState(false);
@@ -18,7 +21,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       const u = data.user;
       if (u) {
         setFullName(u.user_metadata?.full_name ?? "");
@@ -29,6 +32,14 @@ export default function ProfilePage() {
             year: "numeric", month: "long", day: "numeric",
           })
         );
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("avatar_url")
+          .eq("id", u.id)
+          .single();
+
+        if (profile?.avatar_url) setAvatarUrl(profile.avatar_url);
       }
       setLoading(false);
     });
@@ -37,6 +48,14 @@ export default function ProfilePage() {
   const initials = fullName
     ? fullName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : email[0]?.toUpperCase() ?? "U";
+
+  const handleAvatarUpload = async (file: File) => {
+    const url = await uploadAvatar(file, userId);
+    setAvatarUrl(url);
+
+    const supabase = createClient();
+    await supabase.from("profiles").update({ avatar_url: url }).eq("id", userId);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -96,16 +115,12 @@ export default function ProfilePage() {
       >
         <div className="flex items-center gap-6">
           {/* Avatar */}
-          <div
-            className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-black border-2 shrink-0 select-none"
-            style={{
-              background: "rgba(34,197,94,0.12)",
-              borderColor: "rgba(34,197,94,0.3)",
-              color: "var(--dash-accent)",
-            }}
-          >
-            {initials}
-          </div>
+          <AvatarUpload
+            currentUrl={avatarUrl}
+            userName={fullName}
+            userId={userId}
+            onUpload={handleAvatarUpload}
+          />
           <div>
             <p className="font-bold text-lg" style={{ color: "var(--dash-text)" }}>
               {fullName || "Sin nombre"}
