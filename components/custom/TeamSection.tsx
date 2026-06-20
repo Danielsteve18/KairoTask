@@ -14,7 +14,6 @@ const team = [
     photo: "/team/daniel.png",
     gradient: "from-blue-500 to-indigo-600",
     accent: "text-blue-500",
-    mascotLabel: "~snake.exe",
   },
   {
     name: "Luisa Fernanda Lucio",
@@ -23,7 +22,6 @@ const team = [
     photo: "/team/luisa.png",
     gradient: "from-violet-500 to-purple-600",
     accent: "text-violet-500",
-    mascotLabel: "~bug-hunter.sh",
   },
   {
     name: "Didier Andres Congo",
@@ -32,7 +30,6 @@ const team = [
     photo: "/team/didier.png",
     gradient: "from-emerald-500 to-teal-600",
     accent: "text-emerald-500",
-    mascotLabel: "~autobot.ts",
   },
 ];
 
@@ -46,17 +43,6 @@ export const TeamSection = () => {
           backgroundSize: "32px 32px",
         }}
       />
-
-      {/* Fondo animado ASCII sutil */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.03] dark:opacity-[0.06] select-none">
-        <div className="absolute -right-20 top-1/2 -translate-y-1/2 scale-150">
-          <AsciiAnimation
-            frames={skullFrames}
-            fps={6}
-            className="text-foreground leading-none"
-          />
-        </div>
-      </div>
 
       <div className="container mx-auto px-6 md:px-12 relative z-10">
         <motion.div
@@ -114,26 +100,13 @@ export const TeamSection = () => {
                   {member.role}
                 </p>
 
-                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mb-2">
-                  <a href="#" className="p-1 rounded-lg hover:bg-secondary transition-colors" aria-label="GitHub">
-                    <Github className="w-3.5 h-3.5 text-muted-foreground" />
+                <div className="flex gap-3 mt-auto pt-4 border-t border-border/40 w-full justify-center opacity-80 group-hover:opacity-100 transition-opacity">
+                  <a href="#" className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="GitHub">
+                    <Github className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
                   </a>
-                  <a href="#" className="p-1 rounded-lg hover:bg-secondary transition-colors" aria-label="LinkedIn">
-                    <Linkedin className="w-3.5 h-3.5 text-muted-foreground" />
+                  <a href="#" className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="LinkedIn">
+                    <Linkedin className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
                   </a>
-                </div>
-
-                <div className="pt-2 flex flex-col items-center justify-center w-full border-t border-border/40">
-                  <span className={`text-[9px] font-mono mb-1 opacity-50 ${member.accent}`}>
-                    {member.mascotLabel}
-                  </span>
-                  <div className="opacity-40 group-hover:opacity-100 transition-opacity duration-300">
-                    <AsciiAnimation
-                      frames={skullFrames.slice(0, 6)}
-                      fps={4}
-                      className={`text-[6px] leading-tight ${member.accent}`}
-                    />
-                  </div>
                 </div>
               </motion.div>
             ))}
@@ -158,9 +131,9 @@ export const TeamSection = () => {
               </div>
               <div className="flex justify-center">
                 <AsciiAnimation
-                  frames={skullFrames}
+                  frames={skullFrames.slice(14)}
                   fps={10}
-                  className="text-green-400/70 text-[6px] leading-tight overflow-hidden select-none"
+                  className="text-green-400/80 text-[9px] leading-tight overflow-hidden select-none"
                 />
               </div>
               <div className="mt-3 font-mono text-[10px] text-green-400/50 space-y-0.5">
