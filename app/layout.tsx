@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 import { AnimatedTabTitle } from "@/components/custom/AnimatedTabTitle";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
+import { ConsoleEasterEgg } from "@/components/ascii/ConsoleEasterEgg";
 
 export const metadata: Metadata = {
   title: {
@@ -73,6 +74,7 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             <AnimatedTabTitle />
+            <ConsoleEasterEgg />
             {children}
           </QueryProvider>
         </ThemeProvider>
