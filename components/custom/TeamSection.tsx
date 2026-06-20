@@ -4,7 +4,6 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Github, Linkedin, UserCheck, Terminal } from "lucide-react";
 import { AsciiAnimation } from "@/components/ascii/AsciiAnimation";
-import { skullFrames } from "@/lib/ascii/frames";
 
 const team = [
   {
@@ -31,6 +30,65 @@ const team = [
     gradient: "from-emerald-500 to-teal-600",
     accent: "text-emerald-500",
   },
+];
+
+const pongFrames = [
+  `╔════════════════════════╗
+║                        ║
+║       ●                ║
+║                        ║
+║                        ║
+║                        ║
+╚════════════════════════╝`,
+  `╔════════════════════════╗
+║                        ║
+║               ●        ║
+║                        ║
+║                        ║
+║                        ║
+╚════════════════════════╝`,
+  `╔════════════════════════╗
+║                        ║
+║                        ║
+║                        ║
+║        ●               ║
+║                        ║
+╚════════════════════════╝`,
+  `╔════════════════════════╗
+║                        ║
+║                        ║
+║                        ║
+║                ●       ║
+║                        ║
+╚════════════════════════╝`,
+  `╔════════════════════════╗
+║                        ║
+║                        ║
+║                        ║
+║                        ║
+║          ●             ║
+╚════════════════════════╝`,
+  `╔════════════════════════╗
+║                        ║
+║                        ║
+║            ●           ║
+║                        ║
+║                        ║
+╚════════════════════════╝`,
+  `╔════════════════════════╗
+║                        ║
+║                        ║
+║   ●                    ║
+║                        ║
+║                        ║
+╚════════════════════════╝`,
+  `╔════════════════════════╗
+║                        ║
+║         ●              ║
+║                        ║
+║                        ║
+║                        ║
+╚════════════════════════╝`,
 ];
 
 export const TeamSection = () => {
@@ -131,9 +189,9 @@ export const TeamSection = () => {
               </div>
               <div className="flex justify-center">
                 <AsciiAnimation
-                  frames={skullFrames.slice(14)}
-                  fps={10}
-                  className="text-green-400/80 text-[9px] leading-tight overflow-hidden select-none"
+                  frames={pongFrames}
+                  fps={6}
+                  className="text-green-400/80 text-[11px] leading-tight overflow-hidden select-none"
                 />
               </div>
               <div className="mt-3 font-mono text-[10px] text-green-400/50 space-y-0.5">
