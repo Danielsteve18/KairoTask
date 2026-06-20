@@ -192,13 +192,13 @@ export default function SettingsPage() {
       {/* Guardar */}
       <motion.button
         onClick={handleSave}
-        disabled={saving || saved || isSaving}
+        disabled={saving || saved || savePrefs.isPending}
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.98 }}
         className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold mb-6 transition-all duration-200 disabled:opacity-70"
         style={{ background: "var(--dash-accent)", color: "#020617" }}
       >
-        {saving || isSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</>
+        {saving || savePrefs.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</>
           : saved ? <><CheckCircle2 className="w-4 h-4" /> ¡Guardado!</>
           : <><Save className="w-4 h-4" /> Guardar preferencias</>}
       </motion.button>
