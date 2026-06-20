@@ -181,9 +181,9 @@ export const TeamSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-3 lg:row-start-3 flex flex-col sm:flex-row gap-2"
+            className="lg:col-span-3 lg:row-start-3"
           >
-            <div className="flex-1 rounded-2xl border border-border bg-card p-5 flex items-center gap-4 shadow-sm">
+            <div className="rounded-2xl border border-border bg-card p-6 flex items-center gap-5 shadow-sm">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0 shadow-md">
                 <UserCheck className="w-7 h-7 text-white" />
               </div>
@@ -193,20 +193,6 @@ export const TeamSection = () => {
                 </p>
                 <h4 className="font-bold text-foreground text-lg">Daniel Bustos</h4>
                 <p className="text-xs text-muted-foreground mt-0.5">Universidad Del Pacífico</p>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4 shadow-sm shrink-0">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shrink-0 shadow-md">
-                <span className="text-xl">🎓</span>
-              </div>
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">
-                  Universidad del Pacífico
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Formando profesionales que transforman el mundo.
-                </p>
               </div>
             </div>
           </motion.div>
