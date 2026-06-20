@@ -26,11 +26,19 @@ export function MatrixRain({ className = "" }: MatrixRainProps) {
     let drops: number[] = [];
     let charValues: number[] = [];
 
+    const fit = () => {
+      const rect = canvas.getBoundingClientRect();
+      const w = Math.floor(rect.width);
+      const h = Math.floor(rect.height);
+      if (w !== canvas.width || h !== canvas.height) {
+        canvas.width = w;
+        canvas.height = h;
+      }
+    };
+
     const init = () => {
-      const parent = canvas.parentElement;
-      if (!parent) return;
-      canvas.width = parent.clientWidth;
-      canvas.height = parent.clientHeight;
+      fit();
+      if (canvas.width === 0) return;
 
       const fontSize = 14;
       const cols = Math.floor(canvas.width / (fontSize * 0.8));
@@ -43,8 +51,27 @@ export function MatrixRain({ className = "" }: MatrixRainProps) {
     };
 
     init();
-    const onResize = () => init();
-    window.addEventListener("resize", onResize);
+
+    const observer = new ResizeObserver(() => {
+      fit();
+      const fontSize = 14;
+      const cols = Math.floor(canvas.width / (fontSize * 0.8));
+      const prevLen = drops.length;
+      if (cols !== prevLen) {
+        if (cols > prevLen) {
+          for (let i = prevLen; i < cols; i++) {
+            drops.push(
+              Math.floor(Math.random() * -(canvas.height / fontSize)),
+            );
+            charValues.push(Math.floor(Math.random() * CHARS.length));
+          }
+        } else {
+          drops.length = cols;
+          charValues.length = cols;
+        }
+      }
+    });
+    observer.observe(canvas.parentElement!);
 
     const fontSize = 14;
 
@@ -56,11 +83,9 @@ export function MatrixRain({ className = "" }: MatrixRainProps) {
         const x = i * (fontSize * 0.8);
         const y = drops[i] * fontSize;
 
-        // Random character change each frame for shimmering effect
         charValues[i] = (charValues[i] + 1) % CHARS.length;
         const char = CHARS[charValues[i]];
 
-        // Bright leading character
         ctx.font = `bold ${fontSize}px "Geist Mono", monospace`;
         ctx.fillStyle = "#22c55e";
         ctx.shadowColor = "#22c55e";
@@ -68,7 +93,6 @@ export function MatrixRain({ className = "" }: MatrixRainProps) {
         ctx.fillText(char, x, y);
         ctx.shadowBlur = 0;
 
-        // Trail with fading brightness
         ctx.font = `${fontSize}px "Geist Mono", monospace`;
         for (let j = 1; j < 8; j++) {
           const trailY = y - j * fontSize;
@@ -82,7 +106,6 @@ export function MatrixRain({ className = "" }: MatrixRainProps) {
           ctx.fillText(trailChar, x, trailY);
         }
 
-        // Reset or continue
         if (y > canvas.height + 100) {
           drops[i] = Math.floor(Math.random() * -(canvas.height / fontSize));
           charValues[i] = Math.floor(Math.random() * CHARS.length);
@@ -98,15 +121,14 @@ export function MatrixRain({ className = "" }: MatrixRainProps) {
 
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener("resize", onResize);
+      observer.disconnect();
     };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      className={`block ${className}`}
-      style={{ minHeight: "200px" }}
+      className={`block w-full h-full ${className}`}
     />
   );
 }

@@ -118,8 +118,8 @@ export const TeamSection = () => {
             transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="lg:col-span-5 flex flex-col gap-4 lg:pt-0"
           >
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5 overflow-hidden">
-              <div className="flex items-center gap-1.5 mb-3">
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden">
+              <div className="flex items-center gap-1.5 px-5 pt-4 pb-3">
                 <span className="w-2 h-2 rounded-full bg-red-500/80" />
                 <span className="w-2 h-2 rounded-full bg-yellow-500/80" />
                 <span className="w-2 h-2 rounded-full bg-green-500/80" />
@@ -128,15 +128,37 @@ export const TeamSection = () => {
                   <span className="text-zinc-500 text-[10px] font-mono">team.ascii</span>
                 </div>
               </div>
-              <div className="relative -mx-5 -my-2 overflow-hidden" style={{ height: "210px" }}>
+
+              <div className="relative border-y border-zinc-800/40 overflow-hidden" style={{ height: "216px" }}>
                 <MatrixRain className="absolute inset-0" />
+
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+                  <motion.svg
+                    viewBox="0 0 100 240"
+                    className="w-20 h-48 md:w-24 md:h-56 text-green-500"
+                    preserveAspectRatio="xMidYMid meet"
+                    animate={{ opacity: [0.1, 0.2, 0.1] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <g fill="currentColor">
+                      <ellipse cx="50" cy="26" rx="15" ry="16" />
+                      <path d="M 29 40 C 28 6, 72 6, 71 40" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.5" />
+                      <path d="M 30 54 L 70 54 C 74 100, 72 140, 72 155 L 28 155 C 28 140, 26 100, 30 54 Z" />
+                      <path d="M 30 60 L 16 100" stroke="currentColor" strokeWidth="9" strokeLinecap="round" />
+                      <path d="M 70 60 L 84 100" stroke="currentColor" strokeWidth="9" strokeLinecap="round" />
+                      <path d="M 33 155 L 24 222" stroke="currentColor" strokeWidth="10" strokeLinecap="round" />
+                      <path d="M 67 155 L 76 222" stroke="currentColor" strokeWidth="10" strokeLinecap="round" />
+                    </g>
+                  </motion.svg>
+                </div>
               </div>
-              <div className="relative z-10 mt-2 font-mono text-[10px] text-green-400/60 space-y-0.5">
+
+              <div className="flex items-center justify-between px-5 pb-4 pt-3 font-mono text-[10px] text-green-400/60">
                 <div className="flex items-center gap-2">
                   <Cpu className="w-3 h-3 text-green-500/60" />
-                  <span>system: kairo.team — matrix v2.1</span>
+                  <span>kairo.team — matrix v2.1</span>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex items-center gap-3">
                   <span>members: 3</span>
                   <span>commits: 400+</span>
                   <span className="animate-pulse">●</span>
