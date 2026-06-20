@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Github, Linkedin, UserCheck, Terminal } from "lucide-react";
-import { AsciiAnimation } from "@/components/ascii/AsciiAnimation";
+import { Github, Linkedin, UserCheck, Terminal, Cpu } from "lucide-react";
+import { MatrixRain } from "@/components/ascii/MatrixRain";
 
 const team = [
   {
@@ -30,65 +30,6 @@ const team = [
     gradient: "from-emerald-500 to-teal-600",
     accent: "text-emerald-500",
   },
-];
-
-const pongFrames = [
-  `╔════════════════════════╗
-║                        ║
-║       ●                ║
-║                        ║
-║                        ║
-║                        ║
-╚════════════════════════╝`,
-  `╔════════════════════════╗
-║                        ║
-║               ●        ║
-║                        ║
-║                        ║
-║                        ║
-╚════════════════════════╝`,
-  `╔════════════════════════╗
-║                        ║
-║                        ║
-║                        ║
-║        ●               ║
-║                        ║
-╚════════════════════════╝`,
-  `╔════════════════════════╗
-║                        ║
-║                        ║
-║                        ║
-║                ●       ║
-║                        ║
-╚════════════════════════╝`,
-  `╔════════════════════════╗
-║                        ║
-║                        ║
-║                        ║
-║                        ║
-║          ●             ║
-╚════════════════════════╝`,
-  `╔════════════════════════╗
-║                        ║
-║                        ║
-║            ●           ║
-║                        ║
-║                        ║
-╚════════════════════════╝`,
-  `╔════════════════════════╗
-║                        ║
-║                        ║
-║   ●                    ║
-║                        ║
-║                        ║
-╚════════════════════════╝`,
-  `╔════════════════════════╗
-║                        ║
-║         ●              ║
-║                        ║
-║                        ║
-║                        ║
-╚════════════════════════╝`,
 ];
 
 export const TeamSection = () => {
@@ -187,17 +128,19 @@ export const TeamSection = () => {
                   <span className="text-zinc-500 text-[10px] font-mono">team.ascii</span>
                 </div>
               </div>
-              <div className="flex justify-center">
-                <AsciiAnimation
-                  frames={pongFrames}
-                  fps={6}
-                  className="text-green-400/80 text-[11px] leading-tight overflow-hidden select-none"
-                />
+              <div className="relative -mx-5 -my-2 overflow-hidden" style={{ height: "210px" }}>
+                <MatrixRain className="absolute inset-0" />
               </div>
-              <div className="mt-3 font-mono text-[10px] text-green-400/50 space-y-0.5">
-                <div>{"> Universidad Del Pacífico — 2025"}</div>
-                <div>{"> members: 3 | commits: 400+ | ☕ ∞"}</div>
-                <span className="inline-block w-2 h-3 bg-green-400/50 animate-pulse" />
+              <div className="relative z-10 mt-2 font-mono text-[10px] text-green-400/60 space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <Cpu className="w-3 h-3 text-green-500/60" />
+                  <span>system: kairo.team — matrix v2.1</span>
+                </div>
+                <div className="flex gap-3">
+                  <span>members: 3</span>
+                  <span>commits: 400+</span>
+                  <span className="animate-pulse">●</span>
+                </div>
               </div>
             </div>
 
