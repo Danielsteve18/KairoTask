@@ -2,26 +2,15 @@
 
 Para mantener la máxima eficiencia de rendimiento, **KairoTask** separa de manera estricta la gestión de datos locales en memoria y la caché del servidor.
 
-*   **Zustand:** Maneja el estado global del cliente (menús colapsados, filtros del Kanban activos, preferencias del usuario).
-*   **TanStack Query (React Query):** Gestiona el estado del servidor (fetching, almacenamiento en caché, revalidación y sincronización en tiempo real de tareas y proyectos con PostgreSQL).
+- **Zustand:** Maneja el estado global del cliente (panel de notificaciones, Pomodoro timer, búsqueda global).
+- **TanStack Query (React Query):** Gestiona el estado del servidor (fetching, almacenamiento en caché, revalidación y mutaciones).
 
 ---
 
-## 🛠️ Instalación y Dependencias
+## 🚀 1. Configuración de TanStack Query
 
-Instala ambas librerías junto con las herramientas oficiales de desarrollo recomendadas por TanStack utilizando `pnpm`:
+### Crear Proveedor de Consultas (`components/query-provider.tsx`):
 
-```bash
-pnpm add @tanstack/react-query @tanstack/react-query-devtools zustand
-```
-
----
-
-## 🚀 1. Configuración de TanStack Query en Next.js
-
-Para evitar que los datos de las consultas de caché se mezclen entre múltiples renderizados del servidor (SSR), creamos una instancia fresca de `QueryClient` para cada petición.
-
-### Crear Proveedor de Consultas (`src/app/query-provider.tsx`):
 ```tsx
 "use client";
 
@@ -35,8 +24,8 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 1000 * 60 * 5, // Los datos se consideran frescos por 5 minutos
-            refetchOnWindowFocus: false, // Evita peticiones innecesarias al cambiar de pestaña
+            staleTime: 1000 * 60, // 1 minuto
+            retry: 1,
           },
         },
       })
@@ -50,56 +39,106 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
   );
 }
 ```
-*(Envuelve este proveedor dentro del `layout.tsx` global junto a NextUI).*
+
+Envuelve este proveedor dentro del `app/layout.tsx` global.
 
 ---
 
 ## 🧠 2. Uso de Zustand para el Estado del Cliente
 
-Zustand destaca por su simplicidad (sin necesidad de complejos proveedores o Boilerplate de Contexts) y rendimiento al evitar re-renders innecesarios.
+### Stores actuales:
 
-### Ejemplo de Configuración de Tienda para Filtros del Kanban (`src/store/useKanbanStore.ts`):
+#### Notificaciones (`store/useNotificationStore.ts`):
 ```typescript
 import { create } from "zustand";
 
-interface KanbanState {
-  searchQuery: string;
-  selectedPriority: "low" | "medium" | "high" | "all";
-  setSearchQuery: (query: string) => void;
-  setSelectedPriority: (priority: "low" | "medium" | "high" | "all") => void;
-  resetFilters: () => void;
+interface NotificationState {
+  isOpen: boolean;
+  open: () => void;
+  close: () => void;
+  toggle: () => void;
 }
 
-export const useKanbanStore = create<KanbanState>((set) => ({
-  searchQuery: "",
-  selectedPriority: "all",
-  setSearchQuery: (query) => set({ searchQuery: query }),
-  setSelectedPriority: (priority) => set({ selectedPriority: priority }),
-  resetFilters: () => set({ searchQuery: "", selectedPriority: "all" }),
+export const useNotificationStore = create<NotificationState>((set) => ({
+  isOpen: false,
+  open: () => set({ isOpen: true }),
+  close: () => set({ isOpen: false }),
+  toggle: () => set((s) => ({ isOpen: !s.isOpen })),
 }));
 ```
 
-### Consumir el estado en un componente React:
-```tsx
-"use client";
+#### Pomodoro (`store/usePomodoroStore.ts`):
+```typescript
+interface PomodoroState {
+  mode: "focus" | "break" | "long_break";
+  secondsLeft: number;
+  isRunning: boolean;
+  // ... acciones start, pause, reset, complete
+}
+```
 
-import { useKanbanStore } from "@/store/useKanbanStore";
-
-export function SearchBar() {
-  const { searchQuery, setSearchQuery } = useKanbanStore();
-
-  return (
-    <input
-      type="text"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      placeholder="Buscar tareas..."
-    />
-  );
+#### Búsqueda Global (`store/useSearchStore.ts`):
+```typescript
+interface SearchState {
+  isOpen: boolean;
+  query: string;
+  open: () => void;
+  close: () => void;
+  setQuery: (query: string) => void;
 }
 ```
 
 ---
 
+## 🎣 3. TanStack Query Hooks
+
+Cada hook vive en `hooks/` y sigue el patrón:
+
+```typescript
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createClient } from "@/lib/supabase/client";
+
+// Query
+export function useProjects() {
+  return useQuery({
+    queryKey: ["projects"],
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.from("projects").select("*");
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+// Mutation con invalidación
+export function useCreateProject() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: CreateProjectInput) => { ... },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+    },
+  });
+}
+```
+
+### Hooks disponibles en `hooks/`:
+
+| Hook | Query Key | Propósito |
+|------|-----------|-----------|
+| `useProjects` | `["projects"]` | CRUD de proyectos con conteo de tareas/miembros |
+| `useTasks` | `["tasks", projectId]` | CRUD de tareas con filtros y Realtime |
+| `useProjectMembers` | `["project-members", projectId]` | Miembros + roles |
+| `useTaskComments` | `["comments", taskId]` | Comentarios en tareas |
+| `useNotifications` | `["notifications"]` | Notificaciones del usuario |
+| `useNotificationPreferences` | `["notification_preferences"]` | Preferencias de notificación |
+| `usePomodoroSessions` | `["pomodoro-sessions"]` | Sesiones de enfoque |
+| `useTaskAttachments` | `["task-attachments", taskId]` | Archivos adjuntos |
+| `useGlobalSearch` | `["global-search", query]` | Búsqueda global |
+| `useActivityLog` | `["activity-log", projectId]` | Feed de actividad |
+
+---
+
 > [!TIP]
-> **TanStack Query Devtools:** Al levantar el proyecto localmente (`pnpm dev`), verás un pequeño logo flotante de React Query en la esquina de la pantalla. Úsalo para inspeccionar las consultas activas, sus payloads en caché y forzar re-refetchings de prueba.
+> **TanStack Query Devtools:** Al levantar el proyecto localmente (`pnpm dev`), verás un logo flotante de React Query en la esquina de la pantalla. Úsalo para inspeccionar las consultas activas, sus payloads en caché y forzar re-refetchings de prueba.
