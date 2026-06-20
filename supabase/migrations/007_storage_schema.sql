@@ -33,7 +33,48 @@ using (
   and owner = auth.uid()
 );
 
--- 3. RLS para task-attachments
+-- 3. Tabla task_attachments (debe crearse antes de las policies de storage que la referencian)
+create table public.task_attachments (
+  id uuid default gen_random_uuid() primary key,
+  task_id uuid references public.tasks on delete cascade not null,
+  user_id uuid references auth.users on delete cascade not null,
+  file_name text not null,
+  file_size integer not null,
+  mime_type text not null,
+  storage_path text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create index idx_task_attachments_task on public.task_attachments (task_id, created_at desc);
+
+alter table public.task_attachments enable row level security;
+
+create policy "Miembros pueden ver adjuntos"
+on public.task_attachments for select
+using (
+  exists (
+    select 1 from public.project_members pm
+    join public.tasks t on t.project_id = pm.project_id
+    where t.id = task_id and pm.user_id = auth.uid()
+  )
+);
+
+create policy "Miembros pueden crear adjuntos"
+on public.task_attachments for insert
+with check (
+  user_id = auth.uid()
+  and exists (
+    select 1 from public.project_members pm
+    join public.tasks t on t.project_id = pm.project_id
+    where t.id = task_id and pm.user_id = auth.uid()
+  )
+);
+
+create policy "Creador puede eliminar adjunto"
+on public.task_attachments for delete
+using (user_id = auth.uid());
+
+-- 4. RLS para task-attachments (despues de que la tabla existe)
 create policy "Miembros del proyecto pueden leer adjuntos"
 on storage.objects for select
 using (
@@ -63,47 +104,5 @@ using (
   and owner = auth.uid()
 );
 
--- 4. Tabla task_attachments
-create table public.task_attachments (
-  id uuid default gen_random_uuid() primary key,
-  task_id uuid references public.tasks on delete cascade not null,
-  user_id uuid references auth.users on delete cascade not null,
-  file_name text not null,
-  file_size integer not null,
-  mime_type text not null,
-  storage_path text not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-create index idx_task_attachments_task on public.task_attachments (task_id, created_at desc);
-
--- 5. RLS para task_attachments
-alter table public.task_attachments enable row level security;
-
-create policy "Miembros pueden ver adjuntos"
-on public.task_attachments for select
-using (
-  exists (
-    select 1 from public.project_members pm
-    join public.tasks t on t.project_id = pm.project_id
-    where t.id = task_id and pm.user_id = auth.uid()
-  )
-);
-
-create policy "Miembros pueden crear adjuntos"
-on public.task_attachments for insert
-with check (
-  user_id = auth.uid()
-  and exists (
-    select 1 from public.project_members pm
-    join public.tasks t on t.project_id = pm.project_id
-    where t.id = task_id and pm.user_id = auth.uid()
-  )
-);
-
-create policy "Creador puede eliminar adjunto"
-on public.task_attachments for delete
-using (user_id = auth.uid());
-
--- 6. Agregar a Realtime
+-- 5. Agregar a Realtime
 alter publication supabase_realtime add table public.task_attachments;
