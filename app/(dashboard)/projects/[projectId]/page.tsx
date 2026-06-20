@@ -9,9 +9,11 @@ import {
   Palette, Save, Trash2, Hash, AtSign,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { useProjectMembers } from "@/hooks/useProjectMembers";
+import { useProjects } from "@/hooks/useProjects";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface ProjectMeta {
@@ -68,6 +70,12 @@ export default function ProjectPage({
   const [settingsColor, setSettingsColor]       = useState("");
   const [isSaving, setIsSaving]                 = useState(false);
   const [saveError, setSaveError]               = useState<string | null>(null);
+
+  // Delete confirmation
+  const [isDeleting, setIsDeleting]             = useState(false);
+  const [confirmDeleteText, setConfirmDeleteText] = useState("");
+  const router = useRouter();
+  const { deleteProject } = useProjects();
 
   // Tasks & Members Hooks
   const {
@@ -188,6 +196,19 @@ export default function ProjectPage({
       setActivePanel(null);
     }
     setIsSaving(false);
+  };
+
+  // Delete project
+  const handleDeleteProject = async () => {
+    if (!project) return;
+    setIsDeleting(true);
+    try {
+      await deleteProject.mutateAsync(project.id);
+      router.push("/projects");
+    } catch {
+      setIsDeleting(false);
+      setConfirmDeleteText("");
+    }
   };
 
   // ── Loading ─────────────────────────────────────────────────────────────────
@@ -668,14 +689,51 @@ export default function ProjectPage({
 
                       {/* Danger zone */}
                       <div className="pt-1 border-t" style={{ borderColor: "var(--dash-border)" }}>
-                        <button
-                          disabled
-                          className="w-full py-2 rounded-lg text-xs font-mono border border-dashed flex items-center justify-center gap-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                          style={{ borderColor: "#EF444440", color: "#EF4444" }}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          Eliminar proyecto — próximamente
-                        </button>
+                        {!isDeleting ? (
+                          <button
+                            onClick={() => setIsDeleting(true)}
+                            className="w-full py-2 rounded-lg text-xs font-mono border border-dashed flex items-center justify-center gap-2 transition-all hover:bg-red-500/5"
+                            style={{ borderColor: "#EF444440", color: "#EF4444" }}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            Eliminar proyecto
+                          </button>
+                        ) : (
+                          <div className="space-y-3 py-2">
+                            <p className="text-xs font-mono text-red-400">
+                              ¿Eliminar proyecto? Esta acción no se puede revertir.
+                            </p>
+                            <p className="text-[11px]" style={{ color: "var(--dash-text-muted)" }}>
+                              Escribe <strong>ELIMINAR</strong> para confirmar:
+                            </p>
+                            <input
+                              type="text"
+                              value={confirmDeleteText}
+                              onChange={(e) => setConfirmDeleteText(e.target.value)}
+                              placeholder="ELIMINAR"
+                              className="w-full rounded-lg px-4 py-2 text-sm outline-none border bg-transparent text-red-400 placeholder:text-red-400/30"
+                              style={{ borderColor: "#EF444440" }}
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => { setIsDeleting(false); setConfirmDeleteText(""); }}
+                                className="flex-1 py-2 rounded-lg border text-xs font-mono transition-all hover:bg-white/5"
+                                style={{ borderColor: "var(--dash-border)", color: "var(--dash-text-muted)" }}
+                              >
+                                Cancelar
+                              </button>
+                              <button
+                                onClick={handleDeleteProject}
+                                disabled={confirmDeleteText !== "ELIMINAR"}
+                                className="flex-1 py-2 rounded-lg text-xs font-mono font-semibold bg-red-600 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-red-700 transition-all"
+                              >
+                                {deleteProject.isPending ? (
+                                  <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                                ) : "Eliminar"}
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>

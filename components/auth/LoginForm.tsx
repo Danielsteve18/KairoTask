@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 const loginSchema = z.object({
@@ -149,6 +150,16 @@ export function LoginForm() {
             {errors.password.message}
           </p>
         )}
+      </div>
+
+      {/* Forgot password */}
+      <div className="flex justify-end -mt-2">
+        <Link
+          href="/forgot-password"
+          className="text-xs text-[#94A3B8] hover:text-[#22C55E] transition-colors font-mono"
+        >
+          ¿Olvidaste tu contraseña?
+        </Link>
       </div>
 
       {/* Submit */}
