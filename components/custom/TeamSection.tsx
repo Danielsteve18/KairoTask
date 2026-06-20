@@ -64,62 +64,60 @@ export const TeamSection = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {team.map((member, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.55, delay: idx * 0.12, ease: [0.22, 1, 0.36, 1] }}
-                className="group rounded-2xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative flex flex-col p-6 items-center text-center"
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-2">
+          {team.map((member, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.55, delay: idx * 0.12, ease: [0.22, 1, 0.36, 1] }}
+              className="group rounded-2xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative flex flex-col p-6 items-center text-center lg:row-span-2"
+            >
+              <div className={`absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500 bg-gradient-to-br ${member.gradient} pointer-events-none`} />
+
+              <div
+                className={`relative w-20 h-20 rounded-xl bg-gradient-to-br ${member.gradient} flex items-center justify-center text-white text-xl font-black mb-4 shadow-md overflow-hidden`}
               >
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500 bg-gradient-to-br ${member.gradient} pointer-events-none`} />
+                <span className="absolute inset-0 flex items-center justify-center select-none">
+                  {member.init}
+                </span>
+                <Image
+                  src={member.photo}
+                  alt={`Foto de ${member.name}`}
+                  fill
+                  className="object-cover object-top"
+                  sizes="80px"
+                />
+              </div>
 
-                <div
-                  className={`relative w-20 h-20 rounded-xl bg-gradient-to-br ${member.gradient} flex items-center justify-center text-white text-xl font-black mb-4 shadow-md overflow-hidden`}
-                >
-                  <span className="absolute inset-0 flex items-center justify-center select-none">
-                    {member.init}
-                  </span>
-                  <Image
-                    src={member.photo}
-                    alt={`Foto de ${member.name}`}
-                    fill
-                    className="object-cover object-top"
-                    sizes="80px"
-                  />
-                </div>
+              <h3 className="font-bold text-foreground text-sm leading-tight mb-1">
+                {member.name}
+              </h3>
+              <p className={`font-medium text-[11px] ${member.accent} mb-1`}>
+                {member.role}
+              </p>
 
-                <h3 className="font-bold text-foreground text-sm leading-tight mb-1">
-                  {member.name}
-                </h3>
-                <p className={`font-medium text-[11px] ${member.accent} mb-1`}>
-                  {member.role}
-                </p>
-
-                <div className="flex gap-3 mt-auto pt-4 border-t border-border/40 w-full justify-center opacity-80 group-hover:opacity-100 transition-opacity">
-                  <a href="#" className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="GitHub">
-                    <Github className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
-                  </a>
-                  <a href="#" className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="LinkedIn">
-                    <Linkedin className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
-                  </a>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+              <div className="flex gap-3 mt-auto pt-4 border-t border-border/40 w-full justify-center opacity-80 group-hover:opacity-100 transition-opacity">
+                <a href="#" className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="GitHub">
+                  <Github className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                </a>
+                <a href="#" className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="LinkedIn">
+                  <Linkedin className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                </a>
+              </div>
+            </motion.div>
+          ))}
 
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-5 flex flex-col gap-4 lg:pt-0"
+            className="lg:col-span-2 lg:row-span-3"
           >
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden">
-              <div className="flex items-center gap-1.5 px-5 pt-4 pb-3">
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden h-full flex flex-col">
+              <div className="flex items-center gap-1.5 px-5 pt-4 pb-3 shrink-0">
                 <span className="w-2 h-2 rounded-full bg-red-500/80" />
                 <span className="w-2 h-2 rounded-full bg-yellow-500/80" />
                 <span className="w-2 h-2 rounded-full bg-green-500/80" />
@@ -129,7 +127,7 @@ export const TeamSection = () => {
                 </div>
               </div>
 
-              <div className="relative border-y border-zinc-800/40 overflow-hidden" style={{ height: "216px" }}>
+              <div className="relative border-y border-zinc-800/40 overflow-hidden flex-1 min-h-[300px]">
                 <MatrixRain className="absolute inset-0" />
 
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
@@ -164,7 +162,7 @@ export const TeamSection = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between px-5 pb-4 pt-3 font-mono text-[10px] text-green-400/60">
+              <div className="flex items-center justify-between px-5 pb-4 pt-3 shrink-0 font-mono text-[10px] text-green-400/60">
                 <div className="flex items-center gap-2">
                   <Cpu className="w-3 h-3 text-green-500/60" />
                   <span>kairo.team — matrix v2.1</span>
@@ -176,14 +174,16 @@ export const TeamSection = () => {
                 </div>
               </div>
             </div>
+          </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-2xl border border-border bg-card p-6 flex items-center gap-5 shadow-sm"
-            >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="lg:col-span-3 lg:row-start-3 flex flex-col sm:flex-row gap-2"
+          >
+            <div className="flex-1 rounded-2xl border border-border bg-card p-5 flex items-center gap-4 shadow-sm">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0 shadow-md">
                 <UserCheck className="w-7 h-7 text-white" />
               </div>
@@ -194,7 +194,21 @@ export const TeamSection = () => {
                 <h4 className="font-bold text-foreground text-lg">Daniel Bustos</h4>
                 <p className="text-xs text-muted-foreground mt-0.5">Universidad Del Pacífico</p>
               </div>
-            </motion.div>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4 shadow-sm shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shrink-0 shadow-md">
+                <span className="text-xl">🎓</span>
+              </div>
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+                  Universidad del Pacífico
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Formando profesionales que transforman el mundo.
+                </p>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>
