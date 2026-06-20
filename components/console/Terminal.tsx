@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 interface Line {
@@ -29,6 +29,12 @@ const HELP_TEXT = `Comandos disponibles:
   banner     — Mostrar ASCII art
   help       — Mostrar esta ayuda`;
 
+let idCounter = 1;
+
+function addLineTo(lines: Line[], text: string, type: Line["type"]) {
+  return [...lines, { id: idCounter++, text, type }];
+}
+
 export function Terminal() {
   const [lines, setLines] = useState<Line[]>([
     { id: 0, text: "> kairo.console v0.1 — Escribe 'help' para comandos", type: "system" },
@@ -36,165 +42,9 @@ export function Terminal() {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [historyIdx, setHistoryIdx] = useState(-1);
-  const [nextId, setNextId] = useState(1);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
-
-  const addLine = useCallback((text: string, type: Line["type"]) => {
-    setLines((prev) => [...prev, { id: nextId, text, type }]);
-    setNextId((id) => id + 1);
-  }, [nextId]);
-
-  const executeCommand = useCallback(async (cmd: string) => {
-    const trimmed = cmd.trim();
-    const parts = trimmed.split(/\s+/);
-    const command = parts[0]?.toLowerCase() ?? "";
-    const args = parts.slice(1);
-    const supabase = createClient();
-
-    addLine(`$ ${trimmed}`, "input");
-
-    switch (command) {
-      case "help":
-        addLine(HELP_TEXT, "output");
-        break;
-
-      case "clear":
-        setLines([]);
-        break;
-
-      case "banner":
-        addLine(BANNER, "output");
-        break;
-
-      case "echo":
-        addLine(args.join(" "), "output");
-        break;
-
-      case "date":
-        addLine(new Date().toLocaleString("es-CO", {
-          weekday: "long", year: "numeric", month: "long", day: "numeric",
-          hour: "2-digit", minute: "2-digit", second: "2-digit",
-        }), "output");
-        break;
-
-      case "whoami": {
-        setLoading(true);
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error || !user) {
-          addLine("No autenticado. Inicia sesión primero.", "error");
-        } else {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("full_name, email")
-            .eq("id", user.id)
-            .single();
-          addLine(`  Usuario: ${profile?.full_name ?? "—"}`, "output");
-          addLine(`  Email:   ${profile?.email ?? user.email}`, "output");
-        }
-        setLoading(false);
-        break;
-      }
-
-      case "projects": {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from("projects")
-          .select("name, status, progress")
-          .order("created_at");
-        if (error) {
-          addLine(`Error: ${error.message}`, "error");
-        } else if (!data || data.length === 0) {
-          addLine("No hay proyectos.", "output");
-        } else {
-          for (const p of data) {
-            const statusDot =
-              p.status === "active" ? "🟢" :
-              p.status === "review" ? "🟡" :
-              p.status === "done" ? "⚪" : "🔵";
-            const barLen = Math.round((p.progress ?? 0) / 10);
-            const bar = "█".repeat(barLen) + "░".repeat(10 - barLen);
-            addLine(`  ${statusDot} ${p.name.padEnd(20)} ${String(p.progress ?? 0).padStart(3)}% ${bar}`, "output");
-          }
-        }
-        setLoading(false);
-        break;
-      }
-
-      case "tasks": {
-        setLoading(true);
-        let projectId = args[0];
-
-        if (!projectId) {
-          const { data: firstProject } = await supabase
-            .from("projects")
-            .select("id")
-            .limit(1)
-            .single();
-          if (firstProject) projectId = firstProject.id;
-        }
-
-        if (!projectId) {
-          addLine("No hay proyectos. Crea uno primero.", "output");
-        } else {
-          const { data, error } = await supabase
-            .from("tasks")
-            .select("title, status, priority")
-            .eq("project_id", projectId)
-            .order("created_at");
-          if (error) {
-            addLine(`Error: ${error.message}`, "error");
-          } else if (!data || data.length === 0) {
-            addLine("No hay tareas en este proyecto.", "output");
-          } else {
-            for (const t of data) {
-              const statusIcon =
-                t.status === "done" ? "✅" :
-                t.status === "in-progress" ? "🔄" :
-                t.status === "review" ? "👁" : "📋";
-              const priorityTag =
-                t.priority === "critical" ? "[CRIT]" :
-                t.priority === "high" ? "[HIGH]" :
-                t.priority === "medium" ? "[MED]" : "[LOW]";
-              addLine(`  ${statusIcon} ${priorityTag} ${t.title}`, "output");
-            }
-          }
-        }
-        setLoading(false);
-        break;
-      }
-
-      case "stats": {
-        setLoading(true);
-        const { count: projectCount } = await supabase
-          .from("projects")
-          .select("*", { count: "exact", head: true });
-        const { count: taskCount } = await supabase
-          .from("tasks")
-          .select("*", { count: "exact", head: true });
-        const { data: members } = await supabase
-          .from("project_members")
-          .select("user_id", { count: "exact" });
-        const uniqueMembers = new Set(members?.map((m) => m.user_id) ?? []);
-
-        addLine(`  Proyectos:  ${projectCount ?? 0}`, "output");
-        addLine(`  Tareas:     ${taskCount ?? 0}`, "output");
-        addLine(`  Miembros:   ${uniqueMembers.size}`, "output");
-        setLoading(false);
-        break;
-      }
-
-      case "":
-        break;
-
-      default:
-        addLine(`Comando no encontrado: ${command}. Escribe 'help' para ver los disponibles.`, "error");
-    }
-
-    setHistory((prev) => [...prev, trimmed]);
-    setHistoryIdx(-1);
-  }, [addLine]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && input.trim()) {
@@ -217,6 +67,177 @@ export function Terminal() {
       }
     }
   };
+
+  function executeCommand(cmd: string) {
+    const trimmed = cmd.trim();
+    const parts = trimmed.split(/\s+/);
+    const command = parts[0]?.toLowerCase() ?? "";
+    const args = parts.slice(1);
+    const supabase = createClient();
+
+    setLines((prev) => addLineTo(prev, `$ ${trimmed}`, "input"));
+
+    switch (command) {
+      case "help":
+        setLines((prev) => addLineTo(prev, HELP_TEXT, "output"));
+        break;
+
+      case "clear":
+        setLines([]);
+        break;
+
+      case "banner":
+        setLines((prev) => addLineTo(prev, BANNER, "output"));
+        break;
+
+      case "echo":
+        setLines((prev) => addLineTo(prev, args.join(" "), "output"));
+        break;
+
+      case "date":
+        setLines((prev) => addLineTo(prev,
+          new Date().toLocaleString("es-CO", {
+            weekday: "long", year: "numeric", month: "long", day: "numeric",
+            hour: "2-digit", minute: "2-digit", second: "2-digit",
+          }), "output"));
+        break;
+
+      case "whoami": {
+        setLoading(true);
+        supabase.auth.getUser().then(({ data: { user }, error }) => {
+          if (error || !user) {
+            setLines((prev) => addLineTo(prev, "No autenticado. Inicia sesión primero.", "error"));
+          } else {
+            supabase.from("profiles")
+              .select("full_name, email")
+              .eq("id", user.id)
+              .single()
+              .then(({ data: profile }) => {
+                setLines((prev) => {
+                  let l = addLineTo(prev, `  Usuario: ${profile?.full_name ?? "—"}`, "output");
+                  l = addLineTo(l, `  Email:   ${profile?.email ?? user.email}`, "output");
+                  return l;
+                });
+              });
+          }
+          setLoading(false);
+        });
+        break;
+      }
+
+      case "projects": {
+        setLoading(true);
+        supabase.from("projects")
+          .select("name, status, progress")
+          .order("created_at")
+          .then(({ data, error }) => {
+            if (error) {
+              setLines((prev) => addLineTo(prev, `Error: ${error.message}`, "error"));
+            } else if (!data || data.length === 0) {
+              setLines((prev) => addLineTo(prev, "No hay proyectos.", "output"));
+            } else {
+              setLines((prev) => {
+                let l = prev;
+                for (const p of data) {
+                  const statusDot =
+                    p.status === "active" ? "🟢" :
+                    p.status === "review" ? "🟡" :
+                    p.status === "done" ? "⚪" : "🔵";
+                  const barLen = Math.round((p.progress ?? 0) / 10);
+                  const bar = "█".repeat(barLen) + "░".repeat(10 - barLen);
+                  l = addLineTo(l, `  ${statusDot} ${p.name.padEnd(20)} ${String(p.progress ?? 0).padStart(3)}% ${bar}`, "output");
+                }
+                return l;
+              });
+            }
+            setLoading(false);
+          });
+        break;
+      }
+
+      case "tasks": {
+        setLoading(true);
+        const targetProjectId = args[0];
+
+        const fetchTasks = (pid: string) => {
+          supabase.from("tasks")
+            .select("title, status, priority")
+            .eq("project_id", pid)
+            .order("created_at")
+            .then(({ data, error }) => {
+              if (error) {
+                setLines((prev) => addLineTo(prev, `Error: ${error.message}`, "error"));
+              } else if (!data || data.length === 0) {
+                setLines((prev) => addLineTo(prev, "No hay tareas en este proyecto.", "output"));
+              } else {
+                setLines((prev) => {
+                  let l = prev;
+                  for (const t of data) {
+                    const statusIcon =
+                      t.status === "done" ? "✅" :
+                      t.status === "in-progress" ? "🔄" :
+                      t.status === "review" ? "👁" : "📋";
+                    const priorityTag =
+                      t.priority === "critical" ? "[CRIT]" :
+                      t.priority === "high" ? "[HIGH]" :
+                      t.priority === "medium" ? "[MED]" : "[LOW]";
+                    l = addLineTo(l, `  ${statusIcon} ${priorityTag} ${t.title}`, "output");
+                  }
+                  return l;
+                });
+              }
+              setLoading(false);
+            });
+        };
+
+        if (targetProjectId) {
+          fetchTasks(targetProjectId);
+        } else {
+          supabase.from("projects")
+            .select("id")
+            .limit(1)
+            .single()
+            .then(({ data: firstProject }) => {
+              if (firstProject) {
+                fetchTasks(firstProject.id);
+              } else {
+                setLines((prev) => addLineTo(prev, "No hay proyectos. Crea uno primero.", "output"));
+                setLoading(false);
+              }
+            });
+        }
+        break;
+      }
+
+      case "stats": {
+        setLoading(true);
+        Promise.all([
+          supabase.from("projects").select("*", { count: "exact", head: true }),
+          supabase.from("tasks").select("*", { count: "exact", head: true }),
+          supabase.from("project_members").select("user_id", { count: "exact" }),
+        ]).then(([projectsRes, tasksRes, membersRes]) => {
+          const uniqueMembers = new Set(membersRes.data?.map((m) => m.user_id) ?? []);
+          setLines((prev) => {
+            let l = addLineTo(prev, `  Proyectos:  ${projectsRes.count ?? 0}`, "output");
+            l = addLineTo(l, `  Tareas:     ${tasksRes.count ?? 0}`, "output");
+            l = addLineTo(l, `  Miembros:   ${uniqueMembers.size}`, "output");
+            return l;
+          });
+          setLoading(false);
+        });
+        break;
+      }
+
+      case "":
+        break;
+
+      default:
+        setLines((prev) => addLineTo(prev, `Comando no encontrado: ${command}. Escribe 'help' para ver los disponibles.`, "error"));
+    }
+
+    setHistory((prev) => [...prev, trimmed]);
+    setHistoryIdx(-1);
+  }
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
