@@ -181,7 +181,7 @@ export const TeamSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-3 lg:row-start-3"
+            className="hidden lg:block lg:col-span-3 lg:row-start-3"
           >
             <div className="rounded-2xl border border-border bg-card p-6 shadow-sm h-full flex flex-col">
               <div className="flex items-center gap-4 mb-3">
