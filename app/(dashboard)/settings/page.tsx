@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Globe, Shield, Trash2, ChevronRight, Save, Loader2, CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Moon, Globe, Shield, Trash2, ChevronRight, Save, Loader2, CheckCircle2, Plus, ExternalLink } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useNotificationPreferences, useSavePreferences } from "@/hooks/useNotificationPreferences";
+import { useWebhooks, useCreateWebhook, useDeleteWebhook, useToggleWebhook } from "@/hooks/useWebhooks";
+import { useProjects } from "@/hooks/useProjects";
 
 interface ToggleProps { enabled: boolean; onChange: (v: boolean) => void; }
 
@@ -57,23 +60,36 @@ function SettingRow({ label, description, children }: SettingRowProps) {
 }
 
 export default function SettingsPage() {
+  const t = useTranslations("settings");
+  const tc = useTranslations("common");
   const { data: prefs } = useNotificationPreferences();
   const savePrefs = useSavePreferences();
 
-  const [notifEmail,   setNotifEmail]   = useState(true);
-  const [notifPush,    setNotifPush]    = useState(false);
-  const [notifTask,    setNotifTask]    = useState(true);
-  const [notifMention, setNotifMention] = useState(true);
+  const [localPrefs, setLocalPrefs] = useState<{
+    email: boolean; push: boolean; task_assignment: boolean; mentions: boolean;
+  } | null>(null);
 
-  // Sync local state once prefs load
-  useEffect(() => {
-    if (prefs) {
-      setNotifEmail(prefs.email);
-      setNotifPush(prefs.push);
-      setNotifTask(prefs.task_assignment);
-      setNotifMention(prefs.mentions);
-    }
-  }, [prefs]);
+  const effective = localPrefs ?? prefs ?? { email: true, push: false, task_assignment: true, mentions: true };
+
+  // Webhooks
+  const { data: webhooks } = useWebhooks();
+  const createWebhook = useCreateWebhook();
+  const deleteWebhook = useDeleteWebhook();
+  const toggleWebhook = useToggleWebhook();
+  const { projects } = useProjects();
+  const [showAddWebhook, setShowAddWebhook] = useState(false);
+  const [whProject, setWhProject] = useState("");
+  const [whName, setWhName] = useState("");
+  const [whUrl, setWhUrl] = useState("");
+  const [whEvents, setWhEvents] = useState<string[]>(["task.created"]);
+  const WH_EVENT_OPTIONS = [
+    { value: "task.created", label: "Tarea creada" },
+    { value: "task.updated", label: "Tarea actualizada" },
+    { value: "task.deleted", label: "Tarea eliminada" },
+    { value: "task.completed", label: "Tarea completada" },
+    { value: "sprint.created", label: "Sprint creado" },
+    { value: "member.added", label: "Miembro añadido" },
+  ];
 
   // Apariencia
   const [compactMode, setCompactMode] = useState(false);
@@ -90,12 +106,8 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    await savePrefs.mutateAsync({
-      email: notifEmail,
-      push: notifPush,
-      task_assignment: notifTask,
-      mentions: notifMention,
-    });
+    await savePrefs.mutateAsync(effective);
+    setLocalPrefs(null);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
@@ -116,38 +128,183 @@ export default function SettingsPage() {
           <span style={{ color: "var(--dash-accent)" }}>$</span> kairo settings --config
         </p>
         <h1 className="text-3xl font-black tracking-tight" style={{ color: "var(--dash-text)" }}>
-          Ajustes
+          {t("title")}
         </h1>
         <p className="text-sm mt-1" style={{ color: "var(--dash-text-muted)" }}>
-          Personaliza tu experiencia en KairoTask.
+          {t("subtitle")}
         </p>
       </div>
 
       {/* Notificaciones */}
-      <SettingSection title="🔔 Notificaciones">
-        <SettingRow label="Notificaciones por email" description="Recibe resúmenes y alertas en tu bandeja de entrada.">
-          <Toggle enabled={notifEmail} onChange={setNotifEmail} />
+      <SettingSection title={"🔔 " + t("notifications")}>
+        <SettingRow label={t("emailNotifications")} description={t("emailNotificationsDesc")}>
+          <Toggle enabled={effective.email} onChange={(v) => setLocalPrefs((p) => ({ ...(p ?? prefs ?? { email: true, push: false, task_assignment: true, mentions: true }), email: v }))} />
         </SettingRow>
-        <SettingRow label="Notificaciones push" description="Alertas en tiempo real en el navegador.">
-          <Toggle enabled={notifPush} onChange={setNotifPush} />
+        <SettingRow label={t("pushNotifications")} description={t("pushNotificationsDesc")}>
+          <Toggle enabled={effective.push} onChange={(v) => setLocalPrefs((p) => ({ ...(p ?? prefs ?? { email: true, push: false, task_assignment: true, mentions: true }), push: v }))} />
         </SettingRow>
-        <SettingRow label="Asignación de tareas" description="Notificar cuando te asignan una tarea nueva.">
-          <Toggle enabled={notifTask} onChange={setNotifTask} />
+        <SettingRow label={t("taskAssignment")} description={t("taskAssignmentDesc")}>
+          <Toggle enabled={effective.task_assignment} onChange={(v) => setLocalPrefs((p) => ({ ...(p ?? prefs ?? { email: true, push: false, task_assignment: true, mentions: true }), task_assignment: v }))} />
         </SettingRow>
-        <SettingRow label="Menciones" description="Notificar cuando alguien te menciona en un comentario.">
-          <Toggle enabled={notifMention} onChange={setNotifMention} />
+        <SettingRow label={t("mentions")} description={t("mentionsDesc")}>
+          <Toggle enabled={effective.mentions} onChange={(v) => setLocalPrefs((p) => ({ ...(p ?? prefs ?? { email: true, push: false, task_assignment: true, mentions: true }), mentions: v }))} />
         </SettingRow>
       </SettingSection>
 
+      {/* Webhooks */}
+      <SettingSection title={"🔗 " + t("webhooks")}>
+        <div className="space-y-3">
+          {(!webhooks || webhooks.length === 0) ? (
+            <p className="text-xs font-mono" style={{ color: "var(--dash-text-muted)" }}>
+              {t("noWebhooks")}
+            </p>
+          ) : (
+            webhooks.map((wh) => (
+              <div key={wh.id}
+                className="flex items-center justify-between gap-3 p-3 rounded-lg border"
+                style={{ borderColor: "var(--dash-border)", background: "var(--dash-bg)" }}
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium truncate" style={{ color: "var(--dash-text)" }}>{wh.name}</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full" style={{
+                      background: wh.is_active ? "rgba(34,197,94,0.12)" : "rgba(148,163,184,0.12)",
+                      color: wh.is_active ? "#22C55E" : "var(--dash-text-muted)",
+                    }}>
+                      {wh.is_active ? t("active") : t("inactive")}
+                    </span>
+                  </div>
+                  <p className="text-[11px] font-mono truncate mt-0.5" style={{ color: "var(--dash-text-muted)" }}>
+                    {wh.url}
+                  </p>
+                  {wh.project && (
+                    <span className="text-[10px] font-mono" style={{ color: wh.project.color }}>
+                      {wh.project.name}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => toggleWebhook.mutate({ id: wh.id, is_active: !wh.is_active })}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center border transition-all"
+                    style={{
+                      borderColor: wh.is_active ? "rgba(34,197,94,0.3)" : "var(--dash-border)",
+                      color: wh.is_active ? "#22C55E" : "var(--dash-text-muted)",
+                    }}
+                    title={wh.is_active ? "Desactivar" : "Activar"}
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => { if (confirm(`¿Eliminar webhook "${wh.name}"?`)) deleteWebhook.mutate(wh.id); }}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center border transition-all hover:border-red-500/30 hover:text-red-400"
+                    style={{ borderColor: "var(--dash-border)", color: "var(--dash-text-muted)" }}
+                    title="Eliminar"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {!showAddWebhook ? (
+          <button
+            onClick={() => setShowAddWebhook(true)}
+            className="mt-3 flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono border transition-all hover:bg-white/5 w-full justify-center"
+            style={{ borderColor: "var(--dash-border)", color: "var(--dash-text-muted)" }}
+          >
+            <Plus className="w-3.5 h-3.5" /> {t("addWebhook")}
+          </button>
+        ) : (
+          <div className="mt-3 p-4 rounded-lg border space-y-3" style={{ borderColor: "var(--dash-border)", background: "var(--dash-bg)" }}>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-mono uppercase tracking-widest" style={{ color: "var(--dash-text-muted)" }}>{t("project")}</label>
+              <select value={whProject} onChange={(e) => setWhProject(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border text-sm outline-none font-mono"
+                style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)", color: "var(--dash-text)" }}>
+                <option value="">{t("selectProject")}</option>
+                {(projects ?? []).map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-mono uppercase tracking-widest" style={{ color: "var(--dash-text-muted)" }}>{t("name")}</label>
+              <input value={whName} onChange={(e) => setWhName(e.target.value)}
+                placeholder="Mi webhook"
+                className="w-full px-3 py-2 rounded-lg border text-sm outline-none font-mono"
+                style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)", color: "var(--dash-text)" }} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-mono uppercase tracking-widest" style={{ color: "var(--dash-text-muted)" }}>{t("url")}</label>
+              <input value={whUrl} onChange={(e) => setWhUrl(e.target.value)}
+                placeholder="https://ejemplo.com/webhook"
+                className="w-full px-3 py-2 rounded-lg border text-sm outline-none font-mono"
+                style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)", color: "var(--dash-text)" }} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-mono uppercase tracking-widest" style={{ color: "var(--dash-text-muted)" }}>{t("events")}</label>
+              <div className="flex flex-wrap gap-1.5">
+                {WH_EVENT_OPTIONS.map((ev) => {
+                  const selected = whEvents.includes(ev.value);
+                  return (
+                    <button key={ev.value} type="button" onClick={() => {
+                      setWhEvents((prev) =>
+                        selected ? prev.filter((v) => v !== ev.value) : [...prev, ev.value]
+                      );
+                    }}
+                      className="px-2.5 py-1 rounded-full text-[10px] font-mono border transition-all"
+                      style={{
+                        background: selected ? "rgba(34,197,94,0.12)" : "transparent",
+                        borderColor: selected ? "rgba(34,197,94,0.3)" : "var(--dash-border)",
+                        color: selected ? "#22C55E" : "var(--dash-text-muted)",
+                      }}>
+                      {ev.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={async () => {
+                  if (!whProject || !whName.trim() || !whUrl.trim() || whEvents.length === 0) return;
+                  await createWebhook.mutateAsync({
+                    project_id: whProject,
+                    name: whName.trim(),
+                    url: whUrl.trim(),
+                    events: whEvents,
+                  });
+                  setWhProject(""); setWhName(""); setWhUrl(""); setWhEvents(["task.created"]);
+                  setShowAddWebhook(false);
+                }}
+                disabled={createWebhook.isPending || !whProject || !whName.trim() || !whUrl.trim() || whEvents.length === 0}
+                className="flex-1 py-2 rounded-lg text-xs font-mono font-bold transition-all disabled:opacity-50"
+                style={{ background: "var(--dash-accent)", color: "#020617" }}
+              >
+                {createWebhook.isPending ? tc("loading") : t("createWebhook")}
+              </button>
+              <button onClick={() => setShowAddWebhook(false)}
+                className="px-4 py-2 rounded-lg text-xs font-mono border transition-all"
+                style={{ borderColor: "var(--dash-border)", color: "var(--dash-text-muted)" }}>
+                {tc("cancel")}
+              </button>
+            </div>
+          </div>
+        )}
+      </SettingSection>
+
       {/* Apariencia */}
-      <SettingSection title="🎨 Apariencia">
-        <SettingRow label="Modo compacto" description="Reduce el espaciado de la UI para más densidad de información.">
+      <SettingSection title={"🎨 " + t("appearance")}>
+        <SettingRow label={t("compactMode")} description={t("compactModeDesc")}>
           <Toggle enabled={compactMode} onChange={setCompactMode} />
         </SettingRow>
-        <SettingRow label="Animaciones" description="Habilitar micro-animaciones y transiciones en la interfaz.">
+        <SettingRow label={t("animations")} description={t("animationsDesc")}>
           <Toggle enabled={animations} onChange={setAnimations} />
         </SettingRow>
-        <SettingRow label="Tema" description="El toggle principal está en el Top Bar del Dashboard (☀️/🌙).">
+        <SettingRow label={t("theme")} description={t("themeDesc")}>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono"
             style={{ borderColor: "var(--dash-border)", color: "var(--dash-text-muted)" }}>
             <Moon className="w-3.5 h-3.5" />
@@ -157,8 +314,8 @@ export default function SettingsPage() {
       </SettingSection>
 
       {/* Idioma */}
-      <SettingSection title="🌐 Idioma y Región">
-        <SettingRow label="Idioma de la interfaz" description="Actualmente disponible en Español.">
+      <SettingSection title={"🌐 " + t("language")}>
+        <SettingRow label={t("languageDesc")} description={t("availableSpanish")}>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium"
             style={{ borderColor: "var(--dash-border)", color: "var(--dash-text)", background: "var(--dash-bg)" }}>
             <Globe className="w-4 h-4" style={{ color: "var(--dash-accent)" }} />
@@ -169,8 +326,8 @@ export default function SettingsPage() {
       </SettingSection>
 
       {/* Seguridad */}
-      <SettingSection title="🔐 Seguridad">
-        <SettingRow label="Cambiar contraseña" description="Envía un enlace de restablecimiento a tu email.">
+      <SettingSection title={"🔐 " + t("security")}>
+        <SettingRow label={t("changePassword")} description={t("changePasswordDesc")}>
           <button
             onClick={async () => {
               const supabase = createClient();
@@ -184,7 +341,7 @@ export default function SettingsPage() {
             style={{ borderColor: "var(--dash-border)", color: "var(--dash-text)", background: "var(--dash-bg)" }}
           >
             <Shield className="w-4 h-4" style={{ color: "var(--dash-accent)" }} />
-            Restablecer
+            {t("reset")}
           </button>
         </SettingRow>
       </SettingSection>
@@ -198,9 +355,9 @@ export default function SettingsPage() {
         className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold mb-6 transition-all duration-200 disabled:opacity-70"
         style={{ background: "var(--dash-accent)", color: "#020617" }}
       >
-        {saving || savePrefs.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</>
-          : saved ? <><CheckCircle2 className="w-4 h-4" /> ¡Guardado!</>
-          : <><Save className="w-4 h-4" /> Guardar preferencias</>}
+        {saving || savePrefs.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> {t("saving")}</>
+          : saved ? <><CheckCircle2 className="w-4 h-4" /> {t("saved")}</>
+          : <><Save className="w-4 h-4" /> {t("savePreferences")}</>}
       </motion.button>
 
       {/* Zona de peligro */}
@@ -212,9 +369,9 @@ export default function SettingsPage() {
         style={{ borderColor: "rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.04)" }}
       >
         <h2 className="text-xs font-semibold uppercase tracking-widest font-mono mb-1 text-red-400">
-          ⚠️ Zona de Peligro
+          {"⚠️ " + t("dangerZone")}
         </h2>
-        <p className="text-xs text-red-400/70 mb-4">Estas acciones son irreversibles. Procede con cuidado.</p>
+        <p className="text-xs text-red-400/70 mb-4">{t("dangerZoneDesc")}</p>
 
         {!deleting ? (
           <button
@@ -222,11 +379,11 @@ export default function SettingsPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-red-500/30 text-red-400 bg-red-500/5 hover:bg-red-500/10 transition-all"
           >
             <Trash2 className="w-4 h-4" />
-            Eliminar cuenta
+            {t("deleteAccount")}
           </button>
         ) : (
           <div className="space-y-3">
-            <p className="text-sm text-red-400">Escribe <strong>ELIMINAR</strong> para confirmar:</p>
+            <p className="text-sm text-red-400">{t("deleteAccountConfirm")}</p>
             <input
               type="text"
               value={confirmText}
@@ -240,14 +397,14 @@ export default function SettingsPage() {
                 disabled={confirmText !== "ELIMINAR"}
                 className="px-4 py-2 rounded-lg text-sm font-bold bg-red-600 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-red-700 transition-all"
               >
-                Confirmar eliminación
+                {t("confirmDelete")}
               </button>
               <button
                 onClick={() => { setDeleting(false); setConfirmText(""); }}
                 className="px-4 py-2 rounded-lg text-sm border transition-all"
                 style={{ borderColor: "var(--dash-border)", color: "var(--dash-text-muted)" }}
               >
-                Cancelar
+                {tc("cancel")}
               </button>
             </div>
           </div>

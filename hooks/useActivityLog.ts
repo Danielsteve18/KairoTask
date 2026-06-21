@@ -13,6 +13,7 @@ export interface ActivityEntry {
   action: string;
   metadata: Record<string, unknown>;
   created_at: string;
+  project_name?: string;
   profile: {
     id: string;
     email: string;
@@ -24,12 +25,21 @@ export interface ActivityEntry {
 const ACTION_LABELS: Record<string, string> = {
   task_created: "creó la tarea",
   task_moved: "movió la tarea",
+  task_assigned: "asignó la tarea",
+  task_priority_changed: "cambió la prioridad de",
+  task_deleted: "eliminó la tarea",
+  sprint_created: "creó el sprint",
+  sprint_status_changed: "cambió el estado del sprint",
+  member_invited: "invitó a",
+  member_joined: "se unió al proyecto",
 };
 
 export function formatActivity(entry: ActivityEntry): string {
   const name = entry.profile?.full_name || entry.profile?.email || "Alguien";
   const label = ACTION_LABELS[entry.action] ?? entry.action;
   const title = (entry.metadata?.title as string) ?? "";
+  const sprintName = (entry.metadata?.sprint_name as string) ?? "";
+  const invitedEmail = (entry.metadata?.invited_email as string) ?? "";
 
   if (entry.action === "task_moved") {
     const from = (entry.metadata?.from_status as string) ?? "";
@@ -37,8 +47,30 @@ export function formatActivity(entry: ActivityEntry): string {
     return `${name} ${label} "${title}" de ${from} a ${to}`;
   }
 
-  if (entry.action === "task_created") {
+  if (entry.action === "task_created" || entry.action === "task_deleted" || entry.action === "task_priority_changed") {
     return `${name} ${label} "${title}"`;
+  }
+
+  if (entry.action === "task_assigned") {
+    return `${name} ${label} "${title}"`;
+  }
+
+  if (entry.action === "sprint_created") {
+    return `${name} ${label} "${sprintName}"`;
+  }
+
+  if (entry.action === "sprint_status_changed") {
+    const from = (entry.metadata?.from_status as string) ?? "";
+    const to = (entry.metadata?.to_status as string) ?? "";
+    return `${name} ${label} "${sprintName}" de ${from} a ${to}`;
+  }
+
+  if (entry.action === "member_invited") {
+    return `${name} ${label} ${invitedEmail}`;
+  }
+
+  if (entry.action === "member_joined") {
+    return `${name} ${label}`;
   }
 
   return `${name} ${label}`;
