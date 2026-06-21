@@ -19,15 +19,16 @@ import {
 } from "lucide-react";
 import { useProjects } from "@/hooks/useProjects";
 import { CreateProjectModal } from "@/components/project/CreateProjectModal";
+import { useTranslations } from "next-intl";
 
 const STATUS_CONFIG = {
-  active:  { label: "Activo",      icon: Zap,          color: "#22C55E", bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.2)"   },
-  review:  { label: "En revisión", icon: AlertCircle,  color: "#A855F7", bg: "rgba(168,85,247,0.1)",  border: "rgba(168,85,247,0.2)"  },
-  pending: { label: "Pendiente",   icon: Clock,        color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.2)"  },
-  done:    { label: "Completado",  icon: CheckCircle2, color: "#94A3B8", bg: "rgba(148,163,184,0.1)", border: "rgba(148,163,184,0.2)" },
+  active:  { icon: Zap,         color: "#22C55E", bg: "rgba(34,197,94,0.1)",  border: "rgba(34,197,94,0.2)"   },
+  review:  { icon: AlertCircle,  color: "#A855F7", bg: "rgba(168,85,247,0.1)",  border: "rgba(168,85,247,0.2)"  },
+  pending: { icon: Clock,        color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.2)"  },
+  completed: { icon: CheckCircle2,  color: "#22C55E", bg: "rgba(34,197,94,0.1)",  border: "rgba(34,197,94,0.2)"   },
 };
 
-type StatusKey = keyof typeof STATUS_CONFIG | "all";
+type StatusKey = keyof typeof STATUS_CONFIG | "all" | "done";
 
 const containerVariants: Variants = {
   hidden: {},
@@ -39,6 +40,9 @@ const cardVariants: Variants = {
 };
 
 export default function ProjectsPage() {
+  const tp = useTranslations("projects");
+  const ts = useTranslations("projects.status");
+  const tc = useTranslations("common");
   const [isModalOpen, setIsModalOpen]         = useState(false);
   const [search, setSearch]                   = useState("");
   const [statusFilter, setStatusFilter]       = useState<StatusKey>("all");
@@ -77,11 +81,11 @@ export default function ProjectsPage() {
   const doneTasks   = (projects ?? []).reduce((a, p) => a + (p.tasks?.done  || 0), 0);
 
   const FILTER_PILLS: { key: StatusKey; label: string }[] = [
-    { key: "all",     label: "Todos" },
-    { key: "active",  label: "Activos" },
-    { key: "review",  label: "En revisión" },
-    { key: "pending", label: "Pendientes" },
-    { key: "done",    label: "Completados" },
+    { key: "all",     label: tp("all") },
+    { key: "active",  label: tp("active") },
+    { key: "review",  label: tp("review") },
+    { key: "pending", label: tp("pending") },
+    { key: "done",    label: tp("done") },
   ];
 
   return (
@@ -93,10 +97,10 @@ export default function ProjectsPage() {
             <span style={{ color: "var(--dash-accent)" }}>$</span> ls ~/projects
           </p>
           <h1 className="text-3xl font-black tracking-tight" style={{ color: "var(--dash-text)" }}>
-            Mis Proyectos
+            {tp("title")}
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--dash-text-muted)" }}>
-            {(projects ?? []).length} proyectos en este workspace
+            {tp("subtitle", { count: (projects ?? []).length })}
           </p>
         </div>
         <button
@@ -105,17 +109,17 @@ export default function ProjectsPage() {
           style={{ background: "var(--dash-accent)", color: "#020617", boxShadow: "0 0 20px rgba(34,197,94,0.25)" }}
         >
           <Plus className="w-4 h-4" />
-          Nuevo Proyecto
+          {tp("newProject")}
         </button>
       </div>
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Proyectos Activos", value: activeCount, icon: FolderKanban, color: "#22C55E" },
-          { label: "Tareas totales",    value: totalTasks,  icon: AlertCircle,  color: "#A855F7" },
-          { label: "Completadas",       value: doneTasks,   icon: CheckCircle2, color: "#22C55E" },
-          { label: "Miembros",          value: 1,           icon: Users,        color: "#F59E0B" },
+          { label: tp("activeProjects"), value: activeCount, icon: FolderKanban, color: "#22C55E" },
+          { label: tp("totalTasks"),    value: totalTasks,  icon: AlertCircle,  color: "#A855F7" },
+          { label: tp("completed"),     value: doneTasks,   icon: CheckCircle2, color: "#22C55E" },
+          { label: tp("members"),       value: 1,           icon: Users,        color: "#F59E0B" },
         ].map((stat) => (
           <div
             key={stat.label}
@@ -218,7 +222,7 @@ export default function ProjectsPage() {
           >
             <Search className="w-8 h-8" style={{ color: "var(--dash-text-muted)" }} />
             <p className="text-sm font-mono" style={{ color: "var(--dash-text-muted)" }}>
-              Ningún proyecto coincide con los filtros aplicados.
+              {tp("noProjects")}
             </p>
             <button
               onClick={() => { setSearch(""); setStatusFilter("all"); }}
@@ -264,18 +268,18 @@ export default function ProjectsPage() {
                         style={{ color: status.color, background: status.bg, borderColor: status.border }}
                       >
                         <StatusIcon className="w-3 h-3" />
-                        {status.label}
+                        {tp(project.status)}
                       </div>
                     </div>
 
                     <h2 className="font-bold text-base mb-1" style={{ color: "var(--dash-text)" }}>{project.name}</h2>
                     <p className="text-xs leading-relaxed mb-5 flex-1" style={{ color: "var(--dash-text-muted)" }}>
-                      {project.description || "Sin descripción"}
+                      {project.description || tp("noDescription")}
                     </p>
 
                     <div className="mb-5 mt-auto">
                       <div className="flex justify-between items-center mb-1.5">
-                        <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--dash-text-muted)" }}>Progreso</span>
+                        <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--dash-text-muted)" }}>{tp("progress")}</span>
                         <span className="text-xs font-bold font-mono" style={{ color: project.color }}>{project.progress}%</span>
                       </div>
                       <div className="h-1.5 w-full rounded-full" style={{ background: "var(--dash-border)" }}>
@@ -302,7 +306,7 @@ export default function ProjectsPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-1 text-xs" style={{ color: "var(--dash-text-muted)" }}>
-                        <span className="font-mono">{project.tasks?.done || 0}/{project.tasks?.total || 0} tareas</span>
+                        <span className="font-mono">{project.tasks?.done || 0}/{project.tasks?.total || 0} {tp("tasks")}</span>
                         <ChevronRight className="w-3 h-3" />
                       </div>
                     </div>
@@ -324,7 +328,7 @@ export default function ProjectsPage() {
               >
                 <Plus className="w-5 h-5 group-hover:text-[#22C55E] transition-colors" style={{ color: "var(--dash-text-muted)" }} />
               </div>
-              <p className="text-sm font-medium" style={{ color: "var(--dash-text-muted)" }}>Crear nuevo proyecto</p>
+              <p className="text-sm font-medium" style={{ color: "var(--dash-text-muted)" }}>{tp("createNew")}</p>
               <p className="text-xs font-mono" style={{ color: "var(--dash-border)" }}>&gt; init project</p>
             </button>
           </motion.div>
@@ -341,14 +345,15 @@ export default function ProjectsPage() {
           className="flex flex-col gap-2"
         >
           {/* List Header */}
+          <div className="overflow-x-auto -mx-2 md:mx-0">
           <div
-            className="grid grid-cols-[1fr_120px_120px_100px_40px] items-center px-4 py-2 rounded-lg text-[10px] font-mono uppercase tracking-widest"
+            className="grid grid-cols-[160px_100px_100px_80px_30px] md:grid-cols-[1fr_120px_120px_100px_40px] items-center px-4 py-2 rounded-lg text-[10px] font-mono uppercase tracking-widest min-w-[500px] md:min-w-0"
             style={{ color: "var(--dash-text-muted)" }}
           >
             <span>Proyecto</span>
-            <span>Estado</span>
-            <span>Progreso</span>
-            <span>Tareas</span>
+            <span>{tp("statusLabel")}</span>
+            <span>{tp("progress")}</span>
+            <span>{tp("tasks")}</span>
             <span />
           </div>
 
@@ -359,7 +364,7 @@ export default function ProjectsPage() {
               <motion.div key={project.id} variants={cardVariants}>
                 <Link href={`/projects/${project.id}`}>
                   <div
-                    className="grid grid-cols-[1fr_120px_120px_100px_40px] items-center px-4 py-3.5 rounded-xl border transition-all duration-200"
+                    className="grid grid-cols-[160px_100px_100px_80px_30px] md:grid-cols-[1fr_120px_120px_100px_40px] items-center px-4 py-3.5 rounded-xl border transition-all duration-200 min-w-[500px] md:min-w-0"
                     style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}
                     onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--dash-surface-hover)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--dash-surface)"; }}
@@ -386,7 +391,7 @@ export default function ProjectsPage() {
                       style={{ color: status.color, background: status.bg, borderColor: status.border }}
                     >
                       <StatusIcon className="w-3 h-3" />
-                      {status.label}
+                      {ts(project.status)}
                     </div>
 
                     {/* Progress */}
@@ -428,9 +433,10 @@ export default function ProjectsPage() {
               <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--dash-surface)" }}>
                 <Plus className="w-4 h-4" style={{ color: "var(--dash-text-muted)" }} />
               </div>
-              <span className="text-sm font-mono" style={{ color: "var(--dash-text-muted)" }}>Crear nuevo proyecto</span>
+              <span className="text-sm font-mono" style={{ color: "var(--dash-text-muted)" }}>{tp("createNew")}</span>
             </button>
           </motion.div>
+          </div>
         </motion.div>
       )}
 

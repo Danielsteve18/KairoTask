@@ -1,15 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
 import { Save, Loader2, CheckCircle2, User, Mail, Calendar, Shield, Copy, Check } from "lucide-react";
+import { AvatarUpload } from "@/components/ui/AvatarUpload";
+import { uploadAvatar } from "@/lib/supabase/storage";
 
 export default function ProfilePage() {
+  const t = useTranslations("profile");
+  const tc = useTranslations("common");
   const [fullName, setFullName]     = useState("");
   const [email, setEmail]           = useState("");
   const [joinedAt, setJoinedAt]     = useState("");
   const [userId, setUserId]         = useState("");
+  const [avatarUrl, setAvatarUrl]   = useState<string | null>(null);
   const [loading, setLoading]       = useState(true);
   const [saving, setSaving]         = useState(false);
   const [saved, setSaved]           = useState(false);
@@ -18,7 +24,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       const u = data.user;
       if (u) {
         setFullName(u.user_metadata?.full_name ?? "");
@@ -29,6 +35,14 @@ export default function ProfilePage() {
             year: "numeric", month: "long", day: "numeric",
           })
         );
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("avatar_url")
+          .eq("id", u.id)
+          .single();
+
+        if (profile?.avatar_url) setAvatarUrl(profile.avatar_url);
       }
       setLoading(false);
     });
@@ -37,6 +51,14 @@ export default function ProfilePage() {
   const initials = fullName
     ? fullName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : email[0]?.toUpperCase() ?? "U";
+
+  const handleAvatarUpload = async (file: File) => {
+    const url = await uploadAvatar(file, userId);
+    setAvatarUrl(url);
+
+    const supabase = createClient();
+    await supabase.from("profiles").update({ avatar_url: url }).eq("id", userId);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -50,7 +72,7 @@ export default function ProfilePage() {
     }
     setSaving(false);
     if (err) {
-      setError("Error al guardar los cambios. Intenta de nuevo.");
+      setError(t("saveError"));
     } else {
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -79,10 +101,10 @@ export default function ProfilePage() {
           <span style={{ color: "var(--dash-accent)" }}>$</span> kairo profile --edit
         </p>
         <h1 className="text-3xl font-black tracking-tight" style={{ color: "var(--dash-text)" }}>
-          Mi Perfil
+          {t("title")}
         </h1>
         <p className="text-sm mt-1" style={{ color: "var(--dash-text-muted)" }}>
-          Gestiona tu información personal y datos de cuenta.
+          {t("subtitle")}
         </p>
       </div>
 
@@ -96,19 +118,15 @@ export default function ProfilePage() {
       >
         <div className="flex items-center gap-6">
           {/* Avatar */}
-          <div
-            className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-black border-2 shrink-0 select-none"
-            style={{
-              background: "rgba(34,197,94,0.12)",
-              borderColor: "rgba(34,197,94,0.3)",
-              color: "var(--dash-accent)",
-            }}
-          >
-            {initials}
-          </div>
+          <AvatarUpload
+            currentUrl={avatarUrl}
+            userName={fullName}
+            userId={userId}
+            onUpload={handleAvatarUpload}
+          />
           <div>
             <p className="font-bold text-lg" style={{ color: "var(--dash-text)" }}>
-              {fullName || "Sin nombre"}
+              {fullName || t("noName")}
             </p>
             <p className="text-sm font-mono" style={{ color: "var(--dash-text-muted)" }}>
               {email}
@@ -116,7 +134,7 @@ export default function ProfilePage() {
             <p className="text-xs mt-2 px-2 py-0.5 rounded-full inline-flex items-center gap-1.5 border font-mono"
               style={{ color: "var(--dash-accent)", borderColor: "rgba(34,197,94,0.2)", background: "rgba(34,197,94,0.08)" }}>
               <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse" />
-              Activo
+              {t("active")}
             </p>
           </div>
         </div>
@@ -131,19 +149,19 @@ export default function ProfilePage() {
         style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}
       >
         <h2 className="text-sm font-semibold uppercase tracking-widest font-mono" style={{ color: "var(--dash-text-muted)" }}>
-          Información Personal
+          {t("personalInfo")}
         </h2>
 
         {/* Nombre */}
         <div className="space-y-1.5">
           <label className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest" style={{ color: "var(--dash-text-muted)" }}>
-            <User className="w-3.5 h-3.5" /> Nombre completo
+            <User className="w-3.5 h-3.5" /> {t("fullName")}
           </label>
           <input
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            placeholder="Tu nombre completo"
+            placeholder={t("fullNamePlaceholder")}
             className="w-full rounded-lg px-4 py-2.5 text-sm outline-none border transition-all duration-200"
             style={{
               background: "var(--dash-bg)",
@@ -158,7 +176,7 @@ export default function ProfilePage() {
         {/* Email — solo lectura */}
         <div className="space-y-1.5">
           <label className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest" style={{ color: "var(--dash-text-muted)" }}>
-            <Mail className="w-3.5 h-3.5" /> Email
+            <Mail className="w-3.5 h-3.5" /> {t("email")}
           </label>
           <input
             type="email"
@@ -168,7 +186,7 @@ export default function ProfilePage() {
             style={{ background: "var(--dash-bg)", borderColor: "var(--dash-border)", color: "var(--dash-text)" }}
           />
           <p className="text-xs" style={{ color: "var(--dash-text-muted)" }}>
-            El email no puede modificarse desde aquí.
+            {t("emailNotEditable")}
           </p>
         </div>
       </motion.div>
@@ -182,18 +200,18 @@ export default function ProfilePage() {
         style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}
       >
         <h2 className="text-sm font-semibold uppercase tracking-widest font-mono mb-4" style={{ color: "var(--dash-text-muted)" }}>
-          Datos de Cuenta
+          {t("accountData")}
         </h2>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2 text-sm" style={{ color: "var(--dash-text-muted)" }}>
-              <Calendar className="w-4 h-4" /> Miembro desde
+              <Calendar className="w-4 h-4" /> {t("memberSince")}
             </span>
             <span className="text-sm font-mono" style={{ color: "var(--dash-text)" }}>{joinedAt}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2 text-sm" style={{ color: "var(--dash-text-muted)" }}>
-              <Shield className="w-4 h-4" /> ID de usuario
+              <Shield className="w-4 h-4" /> {t("userId")}
             </span>
             <div className="flex items-center gap-2">
               <span className="text-sm font-mono" style={{ color: "var(--dash-text)" }}>
@@ -212,7 +230,7 @@ export default function ProfilePage() {
                 onMouseLeave={e => {
                   if (!copiedId) (e.currentTarget as HTMLElement).style.background = "transparent";
                 }}
-                title="Copiar ID"
+                title={t("copyId")}
               >
                 {copiedId ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
@@ -224,7 +242,7 @@ export default function ProfilePage() {
       {/* Error */}
       {error && (
         <div className="rounded-lg px-4 py-2.5 text-sm text-red-400 bg-red-400/10 border border-red-400/20 mb-4">
-          {error}
+          {error || t("saveError")}
         </div>
       )}
 
@@ -238,11 +256,11 @@ export default function ProfilePage() {
         style={{ background: "var(--dash-accent)", color: "#020617" }}
       >
         {saving ? (
-          <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</>
+          <><Loader2 className="w-4 h-4 animate-spin" /> {t("saving")}</>
         ) : saved ? (
-          <><CheckCircle2 className="w-4 h-4" /> ¡Guardado!</>
+          <><CheckCircle2 className="w-4 h-4" /> {t("saved")}</>
         ) : (
-          <><Save className="w-4 h-4" /> Guardar cambios</>
+          <><Save className="w-4 h-4" /> {t("saveChanges")}</>
         )}
       </motion.button>
     </div>

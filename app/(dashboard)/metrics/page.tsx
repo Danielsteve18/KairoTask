@@ -1,9 +1,11 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { PomodoroTimer } from "@/components/pomodoro/PomodoroTimer";
 import { PomodoroStats } from "@/components/pomodoro/PomodoroStats";
 
 export default function MetricsPage() {
+  const t = useTranslations("pomodoro");
   return (
     <div className="p-6 md:p-8 max-w-6xl mx-auto w-full">
       <div className="mb-8">
@@ -11,10 +13,10 @@ export default function MetricsPage() {
           <span style={{ color: "var(--dash-accent)" }}>$</span> kairo pomodoro --start
         </p>
         <h1 className="text-3xl font-black tracking-tight" style={{ color: "var(--dash-text)" }}>
-          Pomodoro
+          {t("title")}
         </h1>
         <p className="text-sm mt-1" style={{ color: "var(--dash-text-muted)" }}>
-          Concentración profunda con la técnica Pomodoro.
+          {t("subtitle")}
         </p>
       </div>
 
