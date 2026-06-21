@@ -12,10 +12,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Command,
+  LayoutDashboard,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const sidebarItems = [
+  { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { name: "Proyectos", icon: FolderKanban, href: "/projects" },
   { name: "Equipo", icon: Users, href: "/team" },
   { name: "Pomodoro", icon: Activity, href: "/metrics" },
@@ -27,16 +29,8 @@ export function DashboardSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname() || "";
 
-  return (
-    <motion.aside
-      animate={{ width: isCollapsed ? 80 : 260 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="h-screen flex flex-col relative z-20 shrink-0 border-r"
-      style={{
-        background: "var(--dash-sidebar-bg)",
-        borderColor: "var(--dash-border)",
-      }}
-    >
+  const sidebarContent = (
+    <>
       {/* Botón de colapsar */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
@@ -112,6 +106,52 @@ export function DashboardSidebar() {
           );
         })}
       </div>
-    </motion.aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <motion.aside
+        animate={{ width: isCollapsed ? 80 : 260 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="hidden md:flex h-screen flex-col relative z-20 shrink-0 border-r"
+        style={{
+          background: "var(--dash-sidebar-bg)",
+          borderColor: "var(--dash-border)",
+        }}
+      >
+        {sidebarContent}
+      </motion.aside>
+
+      {/* Mobile bottom nav */}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t px-2 py-1"
+        style={{
+          background: "var(--dash-sidebar-bg)",
+          borderColor: "var(--dash-border)",
+        }}
+      >
+        {sidebarItems.map((item) => {
+          const isActive = pathname.startsWith(item.href);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-all min-w-0"
+              style={{
+                color: isActive ? "var(--dash-accent)" : "var(--dash-text-muted)",
+              }}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="text-[9px] font-mono font-medium truncate max-w-full">
+                {item.name}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+    </>
   );
 }

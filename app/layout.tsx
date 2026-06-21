@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
+import { cookies } from "next/headers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -45,13 +48,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+const locales = ["es", "en"] as const;
+type Locale = (typeof locales)[number];
+
+function isLocale(v: string | undefined): v is Locale {
+  return v === "es" || v === "en";
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const localeCookie = cookieStore.get("NEXT_LOCALE")?.value;
+  const locale: Locale = isLocale(localeCookie) ? localeCookie : "es";
+  const messages = await getMessages({ locale });
+
   return (
-    <html lang="es" className="dark" suppressHydrationWarning>
+    <html lang={locale} className="dark" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -73,9 +88,11 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <QueryProvider>
-            <AnimatedTabTitle />
-            <ConsoleEasterEgg />
-            {children}
+            <NextIntlClientProvider locale={locale} messages={messages}>
+              <AnimatedTabTitle />
+              <ConsoleEasterEgg />
+              {children}
+            </NextIntlClientProvider>
           </QueryProvider>
         </ThemeProvider>
       </body>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useProjectMembers } from "@/hooks/useProjectMembers";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import {
   Users,
@@ -32,6 +33,8 @@ interface GroupedMember {
 }
 
 export default function TeamPage() {
+  const t = useTranslations("team");
+  const tc = useTranslations("common");
   const { teamMembers, isLoadingTeam, teamError, updateMemberRole, removeMember } = useProjectMembers();
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -100,7 +103,7 @@ export default function TeamPage() {
       <div className="flex items-center justify-center h-full min-h-[60vh] gap-3">
         <Loader2 className="w-6 h-6 animate-spin" style={{ color: "var(--dash-accent)" }} />
         <span className="text-sm font-mono text-[var(--dash-text-muted)]">
-          cargando directorio de equipo…
+          {t("loading")}
         </span>
       </div>
     );
@@ -111,7 +114,7 @@ export default function TeamPage() {
       <div className="flex flex-col items-center justify-center h-full min-h-[50vh] gap-4">
         <AlertCircle className="w-10 h-10 text-red-500" />
         <p className="text-sm font-mono text-[var(--dash-text-muted)]">
-          Error al cargar el equipo: {teamError.message}
+          {t("error", { message: teamError.message })}
         </p>
       </div>
     );
@@ -126,10 +129,10 @@ export default function TeamPage() {
             <span style={{ color: "var(--dash-accent)" }}>$</span> kairo team --list-collaborators
           </p>
           <h1 className="text-3xl font-black tracking-tight" style={{ color: "var(--dash-text)" }}>
-            Mi Equipo
+            {t("title")}
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--dash-text-muted)" }}>
-            Directorio consolidado de colaboradores y proyectos compartidos.
+            {t("subtitle")}
           </p>
         </div>
 
@@ -138,7 +141,7 @@ export default function TeamPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--dash-text-muted)" }} />
           <input
             type="text"
-            placeholder="Buscar por nombre o email..."
+            placeholder={t("searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-lg pl-9 pr-4 py-2 text-sm outline-none border transition-all duration-200"
@@ -168,7 +171,7 @@ export default function TeamPage() {
           <div>
             <p className="text-2xl font-black" style={{ color: "var(--dash-text)" }}>{totalCollaborators}</p>
             <p className="text-xs font-mono uppercase tracking-wider" style={{ color: "var(--dash-text-muted)" }}>
-              Colaboradores
+              {t("collaborators")}
             </p>
           </div>
         </div>
@@ -186,7 +189,7 @@ export default function TeamPage() {
           <div>
             <p className="text-2xl font-black" style={{ color: "var(--dash-text)" }}>{uniqueProjectsCount}</p>
             <p className="text-xs font-mono uppercase tracking-wider" style={{ color: "var(--dash-text-muted)" }}>
-              Proyectos Activos
+              {t("activeProjects")}
             </p>
           </div>
         </div>
@@ -206,7 +209,7 @@ export default function TeamPage() {
               {grouped.size > 0 ? "Workspace" : "Individual"}
             </p>
             <p className="text-xs font-mono uppercase tracking-wider" style={{ color: "var(--dash-text-muted)" }}>
-              Modo Colaborativo
+              {t("collaborativeMode")}
             </p>
           </div>
         </div>
@@ -219,10 +222,10 @@ export default function TeamPage() {
       >
         <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: "var(--dash-border)" }}>
           <h2 className="text-sm font-semibold uppercase tracking-widest font-mono" style={{ color: "var(--dash-text-muted)" }}>
-            Lista de Colaboradores
+            {t("memberList")}
           </h2>
           <span className="text-xs font-mono text-[var(--dash-text-muted)]">
-            Mostrando {filteredCollaborators.length} de {totalCollaborators}
+            {t("showing", { filtered: filteredCollaborators.length, total: totalCollaborators })}
           </span>
         </div>
 
@@ -231,12 +234,12 @@ export default function TeamPage() {
             <Users className="w-12 h-12" style={{ color: "var(--dash-text-muted)" }} />
             <div>
               <p className="font-bold text-sm" style={{ color: "var(--dash-text)" }}>
-                {searchQuery ? "Sin resultados para tu búsqueda." : "No tienes colaboradores en el equipo."}
+                {searchQuery ? t("noResults") : t("noCollaborators")}
               </p>
               <p className="text-xs mt-1 max-w-sm" style={{ color: "var(--dash-text-muted)" }}>
                 {searchQuery
-                  ? "Prueba ingresando otro nombre o dirección de correo electrónico."
-                  : "Crea o abre un proyecto e invita colaboradores ingresando su correo en el panel de miembros."}
+                  ? t("searchHint")
+                  : t("inviteHint")}
               </p>
             </div>
             {!searchQuery && (
@@ -245,7 +248,7 @@ export default function TeamPage() {
                 className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all border hover:bg-[var(--dash-surface-hover)]"
                 style={{ borderColor: "var(--dash-border)", color: "var(--dash-text)" }}
               >
-                Ir a proyectos <ArrowRight className="w-3.5 h-3.5" />
+                {t("goToProjects")} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             )}
           </div>
@@ -279,7 +282,7 @@ export default function TeamPage() {
                       </div>
                       <div className="min-w-0">
                         <p className="font-bold text-sm truncate" style={{ color: "var(--dash-text)" }}>
-                          {colab.fullName || "Sin nombre configurado"}
+                          {colab.fullName || t("noName")}
                         </p>
                         <p className="text-xs font-mono flex items-center gap-1.5" style={{ color: "var(--dash-text-muted)" }}>
                           <Mail className="w-3.5 h-3.5 shrink-0" />
@@ -310,7 +313,7 @@ export default function TeamPage() {
                               {p.name}
                             </Link>
                             <span className="text-[9px] uppercase opacity-60 font-semibold ml-0.5">
-                              ({p.role === "owner" ? "dueño" : p.role === "collaborator" ? "colab" : "lector"})
+                              ({p.role === "owner" ? t("roleOwner") : p.role === "collaborator" ? t("roleCollaborator") : t("roleViewer")})
                             </span>
                             {canManage && (
                               <>
@@ -323,29 +326,29 @@ export default function TeamPage() {
                                         role: e.target.value as "collaborator" | "viewer",
                                       });
                                     } catch (err: unknown) {
-                                      alert(err instanceof Error ? err.message : "Error al actualizar rol.");
+                                      alert(err instanceof Error ? err.message : t("updateRoleError"));
                                     }
                                   }}
                                   className="text-[9px] font-mono bg-transparent border rounded px-0.5 py-0 outline-none cursor-pointer ml-0.5"
                                   style={{ borderColor: p.color + "40", color: p.color }}
                                   onClick={(e) => e.stopPropagation()}
                                 >
-                                  <option value="collaborator">Colab.</option>
-                                  <option value="viewer">Lector</option>
+                                  <option value="collaborator">{t("roleCollaborator")}</option>
+                                  <option value="viewer">{t("roleViewer")}</option>
                                 </select>
                                 <button
                                   onClick={async () => {
-                                    if (confirm(`¿Remover a ${colab.email} de ${p.name}?`)) {
+                                    if (confirm(t("removeConfirm", { email: colab.email, project: p.name }))) {
                                       try {
                                         await removeMember.mutateAsync(p.memberRecordId);
                                       } catch (err: unknown) {
-                                        alert(err instanceof Error ? err.message : "Error al remover.");
+                                        alert(err instanceof Error ? err.message : t("removeError"));
                                       }
                                     }
                                   }}
                                   className="p-0.5 rounded hover:bg-red-400/10 transition-colors ml-0.5"
                                   style={{ color: "#EF4444" }}
-                                  title="Remover"
+                                  title={t("remove")}
                                 >
                                   <X className="w-3 h-3" />
                                 </button>

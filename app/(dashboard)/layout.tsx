@@ -5,6 +5,7 @@ import { DashboardBreadcrumb } from "@/components/layout/DashboardBreadcrumb";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { GlobalSearchModal } from "@/components/search/GlobalSearchModal";
 import { SearchTrigger } from "@/components/search/SearchTrigger";
+import { LanguageSwitcher } from "@/components/custom/LanguageSwitcher";
 
 export default function DashboardLayout({
   children,
@@ -38,6 +39,9 @@ export default function DashboardLayout({
               </span>
             </div>
 
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {/* Notifications */}
             <NotificationBell />
 
@@ -50,7 +54,7 @@ export default function DashboardLayout({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16 md:pb-0">
           {children}
         </main>
       </div>

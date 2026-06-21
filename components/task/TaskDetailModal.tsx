@@ -12,6 +12,8 @@ import type { Task, UpdateTaskInput } from "@/hooks/useTasks";
 import { useProjectMembers } from "@/hooks/useProjectMembers";
 import { CommentsSection } from "@/components/task/CommentsSection";
 import { TaskAttachments } from "@/components/task/TaskAttachments";
+import { TaskDependenciesPanel } from "@/components/task/TaskDependenciesPanel";
+import { CustomFieldValuesEditor } from "@/components/task/CustomFieldValuesEditor";
 
 interface TaskDetailModalProps {
   task: Task;
@@ -411,6 +413,13 @@ export function TaskDetailModal({
             {/* Attachments */}
             <div className="border-t" style={{ borderColor: "var(--dash-border)" }} />
             <TaskAttachments taskId={task.id} />
+
+            {/* Custom Fields */}
+            <CustomFieldValuesEditor taskId={task.id} projectId={projectId} />
+
+            {/* Dependencies */}
+            <div className="border-t" style={{ borderColor: "var(--dash-border)" }} />
+            <TaskDependenciesPanel taskId={task.id} projectId={projectId} />
 
             {/* Divider */}
             <div className="border-t" style={{ borderColor: "var(--dash-border)" }} />

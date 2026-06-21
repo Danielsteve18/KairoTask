@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 import withPWA from "@ducanh2912/next-pwa";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin();
 
 const securityHeaders = [
   // Evita MIME type sniffing
@@ -54,7 +57,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA({
+const withPWAConfig = withPWA({
   dest: "public",
   register: true,
   disable: process.env.NODE_ENV === "development",
@@ -64,4 +67,6 @@ export default withPWA({
     skipWaiting: true,
   },
 })(nextConfig);
+
+export default withNextIntl(withPWAConfig);
 
