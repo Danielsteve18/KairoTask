@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kairotask.app";
+
 export const metadata: Metadata = {
   title: "KairoTask | Gestión Ágil para Equipos Modernos",
   description:
     "Ecosistema orbital de productividad y gestión de proyectos con interfaz dev-centric. Kanban, sprints, time tracking y métricas en tiempo real para equipos de ingeniería.",
   alternates: {
-    canonical: "https://kairotask.app",
+    canonical: siteUrl,
   },
 };
 
@@ -18,7 +20,7 @@ const jsonLd = {
   operatingSystem: "Web",
   description:
     "Ecosistema orbital de productividad y gestión de proyectos con interfaz dev-centric. Kanban, sprints, time tracking y métricas en tiempo real.",
-  url: "https://kairotask.app",
+  url: siteUrl,
   offers: {
     "@type": "Offer",
     price: "0",

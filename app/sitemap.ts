@@ -6,7 +6,7 @@ import { MetadataRoute } from "next";
  * Las rutas /dashboard/* y /projects/* están excluidas — son privadas.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://kairotask.app";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kairotask.app";
 
   return [
     {

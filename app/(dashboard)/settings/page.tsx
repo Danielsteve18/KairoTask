@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Moon, Globe, Shield, Trash2, ChevronRight, Save, Loader2, CheckCircle2, Plus, ExternalLink } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 import { useRouter } from "next/navigation";
 import { useNotificationPreferences, useSavePreferences } from "@/hooks/useNotificationPreferences";
 import { useWebhooks, useCreateWebhook, useDeleteWebhook, useToggleWebhook } from "@/hooks/useWebhooks";
@@ -333,7 +334,9 @@ export default function SettingsPage() {
               const supabase = createClient();
               const { data: { user } } = await supabase.auth.getUser();
               if (user?.email) {
-                await supabase.auth.resetPasswordForEmail(user.email);
+                await supabase.auth.resetPasswordForEmail(user.email, {
+                  redirectTo: `${getBaseUrl()}/login`,
+                });
                 alert("Revisa tu email para restablecer tu contraseña.");
               }
             }}
