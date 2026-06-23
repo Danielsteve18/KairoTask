@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Mail, Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 
 const forgotSchema = z.object({
   email: z
@@ -34,7 +35,7 @@ export function ForgotPasswordForm() {
     const supabase = createClient();
 
     const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-      redirectTo: `${window.location.origin}/login`,
+      redirectTo: `${getBaseUrl()}/login`,
     });
 
     if (error) {

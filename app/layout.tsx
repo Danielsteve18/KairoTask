@@ -20,6 +20,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
 import { ConsoleEasterEgg } from "@/components/ascii/ConsoleEasterEgg";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kairotask.app";
+
 export const metadata: Metadata = {
   title: {
     default: "KairoTask | Gestión Ágil para Equipos Modernos",
@@ -27,7 +29,7 @@ export const metadata: Metadata = {
   },
   description:
     "Ecosistema orbital de productividad y gestión de proyectos con interfaz dev-centric. Kanban, sprints y métricas en tiempo real para equipos de ingeniería.",
-  metadataBase: new URL("https://kairotask.app"),
+  metadataBase: new URL(siteUrl),
   openGraph: {
     type: "website",
     siteName: "KairoTask",

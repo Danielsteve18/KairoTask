@@ -7,6 +7,7 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { Loader2, Check, Lock, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 import { PasswordModal } from "./PasswordModal";
 
 const registerSchema = z
@@ -66,6 +67,7 @@ export function RegisterForm() {
         data: {
           full_name: values.fullName,
         },
+        emailRedirectTo: `${getBaseUrl()}/login`,
       },
     });
 

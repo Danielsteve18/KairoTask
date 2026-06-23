@@ -8,9 +8,11 @@ Pasos necesarios para llevar KairoTask a producción después del desarrollo loc
 
 - [ ] Comprar dominio (ej. `kairotask.app`, `kairotask.com`)
 - [ ] Configurar dominio en **Vercel** → Project Settings → Domains
-- [ ] Configurar dominio en **Supabase** → Authentication → Settings → Site URL
-- [ ] Actualizar `NEXT_PUBLIC_SITE_URL` en variables de entorno de Vercel
-- [ ] Actualizar `baseUrl` en `app/sitemap.ts`
+- [ ] Configurar dominio en **Supabase** → Authentication → Settings → Site URL (<-- ESTO es lo que define los links en los emails)
+- [ ] Agregar **Redirect URLs** en Supabase → Authentication → Settings:
+  - `https://tudominio.app/login`
+  - `http://localhost:3000/login` (para desarrollo local)
+- [ ] Actualizar `NEXT_PUBLIC_SITE_URL` en variables de entorno de Vercel (`https://tudominio.app`)
 
 ## 2. Variables de Entorno
 
@@ -21,6 +23,7 @@ Crear en Vercel → Project Settings → Environment Variables:
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://<ref>.supabase.co` | Supabase Dashboard → Project Settings → API |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJ...` | Supabase Dashboard → Project Settings → API → anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | `eyJ...` | Supabase Dashboard → Project Settings → API → service_role key (solo server-side) |
+| `NEXT_PUBLIC_SITE_URL` | `https://tudominio.app` | La URL de producción — usada en metadatos, sitemap, y redirects de auth |
 
 ## 3. SMTP / Correos Transaccionales
 
