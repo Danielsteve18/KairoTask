@@ -1,3 +1,5 @@
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { ThemeToggle } from "@/components/custom/ThemeToggle";
@@ -7,11 +9,20 @@ import { GlobalSearchModal } from "@/components/search/GlobalSearchModal";
 import { SearchTrigger } from "@/components/search/SearchTrigger";
 import { LanguageSwitcher } from "@/components/custom/LanguageSwitcher";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
   return (
     <div className="flex h-screen w-full overflow-hidden" style={{ background: "var(--dash-bg)" }}>
       {/* Sidebar */}
@@ -57,10 +68,10 @@ export default function DashboardLayout({
         <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16 md:pb-0">
           {children}
         </main>
-      </div>
 
-      {/* Global Search Modal (Cmd+K) */}
-      <GlobalSearchModal />
+        {/* Global Search Modal (Cmd+K) */}
+        <GlobalSearchModal />
+      </div>
     </div>
   );
 }

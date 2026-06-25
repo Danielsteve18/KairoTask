@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 
@@ -15,9 +15,47 @@ export interface Project {
   memberCount: number;
 }
 
+export interface CurrentUser {
+  id: string;
+  email: string;
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
 export function useProjects() {
   const queryClient = useQueryClient();
   const supabase = useMemo(() => createClient(), []);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setCurrentUser({
+          id: data.user.id,
+          email: data.user.email ?? "",
+          full_name: data.user.user_metadata?.full_name ?? null,
+          avatar_url: data.user.user_metadata?.avatar_url ?? null,
+        });
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setCurrentUser({
+          id: session.user.id,
+          email: session.user.email ?? "",
+          full_name: session.user.user_metadata?.full_name ?? null,
+          avatar_url: session.user.user_metadata?.avatar_url ?? null,
+        });
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
 
   // Fetch Projects
   const { data: projects, isLoading, error } = useQuery({
@@ -99,5 +137,6 @@ export function useProjects() {
     error,
     createProject,
     deleteProject,
+    currentUser,
   };
 }
