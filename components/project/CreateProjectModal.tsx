@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Loader2, FolderKanban, Palette } from "lucide-react";
 import { useProjects } from "@/hooks/useProjects";
-import { createClient } from "@/lib/supabase/client";
 
 const COLORS = [
   "#22C55E", // Green
@@ -26,7 +25,7 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
   const [color, setColor] = useState(COLORS[0]);
   const [error, setError] = useState<string | null>(null);
 
-  const { createProject } = useProjects();
+  const { createProject, currentUser } = useProjects();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,17 +36,17 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
       return;
     }
 
+    if (!currentUser) {
+      setError("Debes iniciar sesión para crear un proyecto.");
+      return;
+    }
+
     try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) throw new Error("Debes iniciar sesión para crear un proyecto.");
-
       await createProject.mutateAsync({
         name,
         description,
         color,
-        owner_id: user.id,
+        owner_id: currentUser.id,
       });
 
       // Limpiar y cerrar
