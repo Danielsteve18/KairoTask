@@ -335,7 +335,7 @@ export default function SettingsPage() {
               const { data: { user } } = await supabase.auth.getUser();
               if (user?.email) {
                 await supabase.auth.resetPasswordForEmail(user.email, {
-                  redirectTo: `${getBaseUrl()}/login`,
+                  redirectTo: `${getBaseUrl()}/auth/update-password`,
                 });
                 alert("Revisa tu email para restablecer tu contraseña.");
               }

@@ -47,6 +47,7 @@ export function LoginForm() {
     });
 
     if (error) {
+      console.error("[login] signInWithPassword error:", error.message);
       // Mensajes de error humanizados
       if (error.message.includes("Invalid login credentials")) {
         setServerError("Email o contraseña incorrectos. Intenta de nuevo.");
