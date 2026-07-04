@@ -25,8 +25,8 @@ export async function middleware(request: NextRequest) {
   );
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
   const { pathname } = request.nextUrl;
 
@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  if (isProtectedRoute && !user) {
+  if (isProtectedRoute && !session) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("redirectTo", pathname);
@@ -44,13 +44,16 @@ export async function middleware(request: NextRequest) {
   }
 
   // If already authenticated and visits auth pages, redirect to dashboard
-  const authRoutes = ["/login", "/register", "/forgot-password"];
+  const authRoutes = ["/login", "/register", "/forgot-password", "/auth/update-password"];
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
-  if (isAuthRoute && user) {
-    const dashboardUrl = request.nextUrl.clone();
-    dashboardUrl.pathname = "/dashboard";
-    return NextResponse.redirect(dashboardUrl);
+  if (isAuthRoute && session) {
+    const isUpdatePassword = pathname.startsWith("/auth/update-password");
+    if (!isUpdatePassword) {
+      const dashboardUrl = request.nextUrl.clone();
+      dashboardUrl.pathname = "/dashboard";
+      return NextResponse.redirect(dashboardUrl);
+    }
   }
 
   return supabaseResponse;

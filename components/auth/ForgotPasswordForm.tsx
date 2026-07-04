@@ -35,10 +35,11 @@ export function ForgotPasswordForm() {
     const supabase = createClient();
 
     const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-      redirectTo: `${getBaseUrl()}/login`,
+      redirectTo: `${getBaseUrl()}/auth/update-password`,
     });
 
     if (error) {
+      console.error("[forgot-password] resetPasswordForEmail error:", error.message);
       setServerError("Ocurrió un error al enviar el email. Intenta de nuevo.");
       return;
     }

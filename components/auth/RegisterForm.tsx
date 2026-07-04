@@ -67,7 +67,7 @@ export function RegisterForm() {
         data: {
           full_name: values.fullName,
         },
-        emailRedirectTo: `${getBaseUrl()}/login`,
+        emailRedirectTo: `${getBaseUrl()}/auth/callback`,
       },
     });
 
