@@ -8,6 +8,7 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { GlobalSearchModal } from "@/components/search/GlobalSearchModal";
 import { SearchTrigger } from "@/components/search/SearchTrigger";
 import { LanguageSwitcher } from "@/components/custom/LanguageSwitcher";
+import { DashboardTour } from "@/components/onboarding/DashboardTour";
 
 export default async function DashboardLayout({
   children,
@@ -72,6 +73,9 @@ export default async function DashboardLayout({
         {/* Global Search Modal (Cmd+K) */}
         <GlobalSearchModal />
       </div>
+
+      {/* Onboarding tour para nuevos usuarios */}
+      <DashboardTour />
     </div>
   );
 }

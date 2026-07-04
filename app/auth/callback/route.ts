@@ -4,10 +4,9 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard";
 
   if (code) {
-    const supabaseResponse = NextResponse.redirect(new URL(next, origin));
+    const supabaseResponse = NextResponse.next();
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,7 +37,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(errorUrl);
     }
 
-    return supabaseResponse;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const isNew = user?.created_at === user?.updated_at;
+
+    const confirmedUrl = isNew
+      ? new URL("/auth/confirmed?first=true", origin)
+      : new URL("/auth/confirmed", origin);
+
+    return NextResponse.redirect(confirmedUrl);
   }
 
   const errorUrl = new URL("/login", origin);
