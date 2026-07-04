@@ -122,7 +122,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   ];
 
   return (
-    <div className="relative h-full flex flex-col">
+    <div data-tour="kanban" className="relative h-full flex flex-col">
       {/* ── Filters bar ─────────────────────────────────────────────────── */ }
       <div
         className="flex items-center gap-3 px-6 py-3 border-b shrink-0"

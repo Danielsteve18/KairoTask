@@ -43,7 +43,7 @@ export function UserMenu() {
   };
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className="relative" ref={menuRef} data-tour="user-menu">
       {/* Avatar trigger */}
       <button
         onClick={() => setOpen((v) => !v)}

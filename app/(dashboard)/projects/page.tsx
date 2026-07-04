@@ -104,6 +104,7 @@ export default function ProjectsPage() {
           </p>
         </div>
         <button
+          data-tour="create-project"
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold active:scale-[0.97] transition-all duration-200"
           style={{ background: "var(--dash-accent)", color: "#020617", boxShadow: "0 0 20px rgba(34,197,94,0.25)" }}

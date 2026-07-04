@@ -113,6 +113,7 @@ export function DashboardSidebar() {
     <>
       {/* Desktop sidebar */}
       <motion.aside
+        data-tour="sidebar"
         animate={{ width: isCollapsed ? 80 : 260 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className="hidden md:flex h-screen flex-col relative z-20 shrink-0 border-r"
