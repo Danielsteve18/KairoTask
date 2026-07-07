@@ -80,9 +80,11 @@ export function useDeleteAttachment() {
     mutationFn: async ({
       attachmentId,
       storagePath,
+      taskId,
     }: {
       attachmentId: string;
       storagePath: string;
+      taskId: string;
     }) => {
       const supabase = createClient();
 
@@ -99,8 +101,8 @@ export function useDeleteAttachment() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["task-attachments"] });
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["task-attachments", variables.taskId] });
     },
   });
 }

@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
   // Protected routes - redirect to /login if no session
   const protectedRoutes = ["/dashboard", "/projects", "/team", "/metrics", "/settings", "/profile", "/console"];
   const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
+    pathname === route || pathname.startsWith(route + "/")
   );
 
   if (isProtectedRoute && !session) {
@@ -45,7 +45,9 @@ export async function middleware(request: NextRequest) {
 
   // If already authenticated and visits auth pages, redirect to dashboard
   const authRoutes = ["/login", "/register", "/forgot-password", "/auth/update-password"];
-  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
+  const isAuthRoute = authRoutes.some((route) =>
+    pathname === route || pathname.startsWith(route + "/")
+  );
 
   if (isAuthRoute && session) {
     const isUpdatePassword = pathname.startsWith("/auth/update-password");

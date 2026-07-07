@@ -12,6 +12,7 @@ import {
   useDeleteAttachment,
   type TaskAttachment,
 } from "@/hooks/useTaskAttachments";
+import { createClient } from "@/lib/supabase/client";
 import { uploadAttachment, getAttachmentUrl } from "@/lib/supabase/storage";
 
 function formatSize(bytes: number): string {
@@ -47,6 +48,7 @@ function AttachmentRow({ attachment }: { attachment: TaskAttachment }) {
       await deleteAtt.mutateAsync({
         attachmentId: attachment.id,
         storagePath: attachment.storage_path,
+        taskId: attachment.task_id,
       });
     } finally {
       setDeleting(false);
@@ -106,7 +108,9 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
 
     setUploading(true);
     try {
-      const storagePath = await uploadAttachment(file, taskId, "temp");
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      const storagePath = await uploadAttachment(file, taskId, user?.id ?? "unknown");
       await createAtt.mutateAsync({
         taskId,
         fileName: file.name,

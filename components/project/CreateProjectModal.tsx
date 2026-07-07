@@ -46,7 +46,6 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
         name,
         description,
         color,
-        owner_id: currentUser.id,
       });
 
       // Limpiar y cerrar

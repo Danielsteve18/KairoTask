@@ -21,7 +21,8 @@ export function CommentsSection({ taskId }: CommentsSectionProps) {
     setNewComment("");
     try {
       await addComment.mutateAsync(text);
-    } catch {
+    } catch (err) {
+      console.error("Error al enviar comentario:", err);
       setNewComment(text);
     }
   };

@@ -16,7 +16,7 @@ interface ExportImportModalProps {
 }
 
 export function ExportImportModal({ isOpen, onClose, projectId, projectName }: ExportImportModalProps) {
-  const { tasks } = useTasks(projectId);
+  const { tasks, createTask } = useTasks(projectId);
   const [exporting, setExporting] = useState<string | null>(null);
   const [exportDone, setExportDone] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -79,17 +79,31 @@ export function ExportImportModal({ isOpen, onClose, projectId, projectName }: E
       const text = await file.text();
       const data = JSON.parse(text);
       const errors: string[] = [];
-      let success = 0;
+      let inserted = 0;
 
       for (const item of data) {
         if (!item.title) {
           errors.push("Item sin título");
           continue;
         }
-        success++;
+        try {
+          await createTask.mutateAsync({
+            project_id: projectId,
+            title: item.title,
+            description: item.description || "",
+            status: item.status || "backlog",
+            priority: item.priority || "medium",
+            tags: item.tags || [],
+            due_date: item.due_date || null,
+            assignee_id: item.assignee_id || null,
+          });
+          inserted++;
+        } catch (err) {
+          errors.push(err instanceof Error ? err.message : `Error al importar "${item.title}"`);
+        }
       }
 
-      setImportResult({ success, errors });
+      setImportResult({ success: inserted, errors });
     } catch (err) {
       setImportResult({ success: 0, errors: [err instanceof Error ? err.message : "Error al parsear JSON"] });
     } finally {

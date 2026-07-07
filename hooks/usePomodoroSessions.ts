@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { usePomodoroStore } from "@/store/usePomodoroStore";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 
 interface PomodoroSession {
   id: string;
@@ -13,7 +13,7 @@ interface PomodoroSession {
   completed: boolean;
 }
 
-async function fetchTodaySessions(): Promise<PomodoroSession[]> {
+async function fetchTodaySessions(userId: string): Promise<PomodoroSession[]> {
   const supabase = createClient();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -21,6 +21,7 @@ async function fetchTodaySessions(): Promise<PomodoroSession[]> {
   const { data, error } = await supabase
     .from("pomodoro_sessions")
     .select("*")
+    .eq("user_id", userId)
     .gte("started_at", today.toISOString())
     .order("started_at", { ascending: false });
 
@@ -28,7 +29,7 @@ async function fetchTodaySessions(): Promise<PomodoroSession[]> {
   return data ?? [];
 }
 
-async function fetchWeekStats(): Promise<{ date: string; total_minutes: number }[]> {
+async function fetchWeekStats(userId: string): Promise<{ date: string; total_minutes: number }[]> {
   const supabase = createClient();
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 6);
@@ -37,6 +38,7 @@ async function fetchWeekStats(): Promise<{ date: string; total_minutes: number }
   const { data, error } = await supabase
     .from("pomodoro_sessions")
     .select("started_at, duration_minutes")
+    .eq("user_id", userId)
     .eq("type", "focus")
     .eq("completed", true)
     .gte("started_at", weekAgo.toISOString());
@@ -64,15 +66,25 @@ async function fetchWeekStats(): Promise<{ date: string; total_minutes: number }
 export function usePomodoroSessions() {
   const setTotalFocusToday = usePomodoroStore((s) => s.setTotalFocusToday);
   const queryClient = useQueryClient();
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setUserId(data.user.id);
+    });
+  }, []);
 
   const todayQuery = useQuery({
-    queryKey: ["pomodoro-sessions", "today"],
-    queryFn: fetchTodaySessions,
+    queryKey: ["pomodoro-sessions", "today", userId],
+    queryFn: () => fetchTodaySessions(userId!),
+    enabled: !!userId,
   });
 
   const weekQuery = useQuery({
-    queryKey: ["pomodoro-sessions", "week"],
-    queryFn: fetchWeekStats,
+    queryKey: ["pomodoro-sessions", "week", userId],
+    queryFn: () => fetchWeekStats(userId!),
+    enabled: !!userId,
   });
 
   useEffect(() => {
@@ -91,9 +103,12 @@ export function usePomodoroSessions() {
       completed: boolean;
     }) => {
       const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuario no autenticado");
+
       const { data, error } = await supabase
         .from("pomodoro_sessions")
-        .insert(session)
+        .insert({ ...session, user_id: user.id })
         .select()
         .single();
       if (error) throw error;
