@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { createProjectAction } from "@/lib/actions/projects";
 
 export interface Project {
   id: string;
@@ -116,14 +117,8 @@ export function useProjects() {
 
   // Create Project
   const createProject = useMutation({
-    mutationFn: async (newProject: { name: string; description?: string; color: string; owner_id: string }) => {
-      const { data, error } = await supabase
-        .from("projects")
-        .insert([newProject])
-        .select()
-        .single();
-
-      if (error) throw new Error(error.message);
+    mutationFn: async (newProject: { name: string; description?: string; color: string }) => {
+      const data = await createProjectAction(newProject);
       return data;
     },
     onSuccess: () => {

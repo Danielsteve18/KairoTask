@@ -19,14 +19,7 @@ interface TaskSearchResult {
   type: "task";
 }
 
-interface MemberSearchResult {
-  id: string;
-  full_name: string | null;
-  email: string;
-  type: "member";
-}
-
-export type SearchResult = ProjectSearchResult | TaskSearchResult | MemberSearchResult;
+export type SearchResult = ProjectSearchResult | TaskSearchResult;
 
 export function useGlobalSearch() {
   const supabase = useMemo(() => createClient(), []);
@@ -34,9 +27,13 @@ export function useGlobalSearch() {
   const projectsQuery = useQuery({
     queryKey: ["global-search-projects"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
       const { data, error } = await supabase
         .from("projects")
         .select("id, name, description, color")
+        .eq("owner_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -48,19 +45,25 @@ export function useGlobalSearch() {
   const tasksQuery = useQuery({
     queryKey: ["global-search-tasks"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data: projects } = await supabase
+        .from("projects")
+        .select("id, name")
+        .eq("owner_id", user.id);
+
+      const projectIds = (projects ?? []).map((p) => p.id);
+      if (projectIds.length === 0) return [];
+
       const { data, error } = await supabase
         .from("tasks")
         .select("id, project_id, title, description")
+        .in("project_id", projectIds)
         .order("created_at", { ascending: false })
         .limit(200);
 
       if (error) throw error;
-
-      const projectIds = [...new Set((data ?? []).map((t) => t.project_id))];
-      const { data: projects } = await supabase
-        .from("projects")
-        .select("id, name")
-        .in("id", projectIds);
 
       const projectMap = new Map((projects ?? []).map((p) => [p.id, p.name]));
 
@@ -73,20 +76,7 @@ export function useGlobalSearch() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const membersQuery = useQuery({
-    queryKey: ["global-search-members"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, full_name, email");
-
-      if (error) throw error;
-      return (data ?? []).map((m) => ({ ...m, type: "member" as const }));
-    },
-    staleTime: 1000 * 60 * 5,
-  });
-
-  const isLoading = projectsQuery.isLoading || tasksQuery.isLoading || membersQuery.isLoading;
+  const isLoading = projectsQuery.isLoading || tasksQuery.isLoading;
 
   function search(query: string): SearchResult[] {
     if (!query.trim()) return [];
@@ -96,7 +86,6 @@ export function useGlobalSearch() {
 
     const projects = projectsQuery.data ?? [];
     const tasks = tasksQuery.data ?? [];
-    const members = membersQuery.data ?? [];
 
     for (const p of projects) {
       if (
@@ -113,15 +102,6 @@ export function useGlobalSearch() {
         (t.description && t.description.toLowerCase().includes(q))
       ) {
         results.push(t);
-      }
-    }
-
-    for (const m of members) {
-      if (
-        (m.full_name && m.full_name.toLowerCase().includes(q)) ||
-        m.email.toLowerCase().includes(q)
-      ) {
-        results.push(m);
       }
     }
 

@@ -62,10 +62,18 @@ export function SprintPanel({ projectId }: SprintPanelProps) {
   };
 
   const handleStartSprint = async (sprint: Sprint) => {
-    if (activeSprint && activeSprint.id !== sprint.id) {
-      await updateSprint.mutateAsync({ id: activeSprint.id, status: "completed" });
+    const oldActiveId = activeSprint?.id;
+    try {
+      if (oldActiveId && oldActiveId !== sprint.id) {
+        await updateSprint.mutateAsync({ id: oldActiveId, status: "completed" });
+      }
+      await updateSprint.mutateAsync({ id: sprint.id, status: "active" });
+    } catch (err) {
+      if (oldActiveId && oldActiveId !== sprint.id) {
+        await updateSprint.mutateAsync({ id: oldActiveId, status: "active" }).catch(() => {});
+      }
+      console.error("Error al iniciar sprint:", err);
     }
-    await updateSprint.mutateAsync({ id: sprint.id, status: "active" });
   };
 
   if (isLoading) {
@@ -287,7 +295,9 @@ function SprintDetail({ sprint, projectId }: { sprint: Sprint; projectId: string
     try {
       await addTaskToSprint.mutateAsync(selectedTask);
       setSelectedTask("");
-    } catch {}
+    } catch (err) {
+      console.error("Error al agregar tarea al sprint:", err);
+    }
   };
 
   return (

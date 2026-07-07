@@ -224,7 +224,9 @@ export default function ProjectPage({
     try {
       await deleteProject.mutateAsync(project.id);
       router.push("/projects");
-    } catch {
+    } catch (err) {
+      console.error("Error al eliminar proyecto:", err);
+      setSaveError("Error al eliminar el proyecto. Intenta de nuevo.");
       setIsDeleting(false);
       setConfirmDeleteText("");
     }

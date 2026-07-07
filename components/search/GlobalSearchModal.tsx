@@ -3,14 +3,13 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, FolderKanban, FileText, Users, ArrowRight } from "lucide-react";
+import { Search, FolderKanban, FileText, ArrowRight } from "lucide-react";
 import { useSearchStore } from "@/store/useSearchStore";
 import { useGlobalSearch, type SearchResult } from "@/hooks/useGlobalSearch";
 
 const TYPE_CONFIG = {
   project: { icon: FolderKanban, label: "Proyecto", color: "var(--dash-accent)" },
   task: { icon: FileText, label: "Tarea", color: "#3B82F6" },
-  member: { icon: Users, label: "Miembro", color: "#8B5CF6" },
 } as const;
 
 export function GlobalSearchModal() {
@@ -25,13 +24,11 @@ export function GlobalSearchModal() {
   const grouped = {
     project: results.filter((r) => r.type === "project"),
     task: results.filter((r) => r.type === "task"),
-    member: results.filter((r) => r.type === "member"),
   };
 
   const flatResults = [
     ...grouped.project.map((r, i) => ({ ...r, _section: "project" as const, _index: i })),
     ...grouped.task.map((r, i) => ({ ...r, _section: "task" as const, _index: i })),
-    ...grouped.member.map((r, i) => ({ ...r, _section: "member" as const, _index: i })),
   ];
 
   useEffect(() => {
@@ -67,8 +64,6 @@ export function GlobalSearchModal() {
       router.push(`/projects/${result.id}`);
     } else if (result.type === "task") {
       router.push(`/projects/${result.project_id}`);
-    } else if (result.type === "member") {
-      router.push("/team");
     }
   }, [close, router]);
 
@@ -88,7 +83,6 @@ export function GlobalSearchModal() {
   const sectionLabels: Record<string, { label: string; count: number }> = {
     project: { label: "Proyectos", count: grouped.project.length },
     task: { label: "Tareas", count: grouped.task.length },
-    member: { label: "Miembros", count: grouped.member.length },
   };
 
   return (
@@ -180,10 +174,9 @@ export function GlobalSearchModal() {
 
               {query.trim() && flatResults.length > 0 && (
                 <div className="space-y-3">
-                  {(["project", "task", "member"] as const).map((section) => {
+                  {(["project", "task"] as const).map((section) => {
                     const items = section === "project" ? grouped.project
-                      : section === "task" ? grouped.task
-                      : grouped.member;
+                      : grouped.task;
                     if (items.length === 0) return null;
                     const config = TYPE_CONFIG[section];
 
@@ -226,12 +219,11 @@ export function GlobalSearchModal() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium truncate">
-                                  {"name" in item ? item.name : "title" in item ? item.title : item.full_name ?? item.email}
+                                  {"name" in item ? item.name : item.title}
                                 </p>
                                 <p className="text-xs truncate" style={{ color: "var(--dash-text-muted)" }}>
                                   {"project_name" in item && item.project_name ? `${item.project_name} · ` : ""}
                                   {config.label}
-                                  {"description" in item && item.description ? ` · ${item.description.slice(0, 60)}` : ""}
                                 </p>
                               </div>
                               {isSelected && (

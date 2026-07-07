@@ -40,7 +40,9 @@ export async function GET(request: NextRequest) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    const isNew = user?.created_at === user?.updated_at;
+    const isNew = user?.created_at && user?.updated_at
+      ? new Date(user.created_at).getTime() === new Date(user.updated_at).getTime()
+      : false;
 
     const confirmedUrl = isNew
       ? new URL("/auth/confirmed?first=true", origin)

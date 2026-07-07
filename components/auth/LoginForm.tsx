@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -27,7 +27,19 @@ export function LoginForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
+  const rawRedirect = searchParams.get("redirectTo") ?? "/dashboard";
+  const redirectTo = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+    ? rawRedirect
+    : "/dashboard";
+
+  const errorParam = searchParams.get("error");
+  useEffect(() => {
+    if (errorParam === "AuthError") {
+      setServerError("Error al confirmar tu sesión. Intenta ingresar de nuevo.");
+    } else if (errorParam === "NoCode") {
+      setServerError("Enlace de confirmación inválido. Solicita uno nuevo.");
+    }
+  }, [errorParam]);
 
   const {
     register,

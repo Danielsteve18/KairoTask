@@ -42,7 +42,9 @@ export function TaskDependenciesPanel({ taskId, projectId }: TaskDependenciesPan
       await addDependency.mutateAsync({ dependsOnTaskId: selectedTask, type: depType });
       setSelectedTask("");
       setShowAdd(false);
-    } catch {}
+    } catch (err) {
+      console.error("Error al agregar dependencia:", err);
+    }
   };
 
   if (isLoading) {

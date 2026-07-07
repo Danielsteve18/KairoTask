@@ -25,7 +25,7 @@ const STATUS_CONFIG = {
   active:  { icon: Zap,         color: "#22C55E", bg: "rgba(34,197,94,0.1)",  border: "rgba(34,197,94,0.2)"   },
   review:  { icon: AlertCircle,  color: "#A855F7", bg: "rgba(168,85,247,0.1)",  border: "rgba(168,85,247,0.2)"  },
   pending: { icon: Clock,        color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.2)"  },
-  completed: { icon: CheckCircle2,  color: "#22C55E", bg: "rgba(34,197,94,0.1)",  border: "rgba(34,197,94,0.2)"   },
+  done: { icon: CheckCircle2,  color: "#22C55E", bg: "rgba(34,197,94,0.1)",  border: "rgba(34,197,94,0.2)"   },
 };
 
 type StatusKey = keyof typeof STATUS_CONFIG | "all" | "done";
