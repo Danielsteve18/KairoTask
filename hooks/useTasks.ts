@@ -92,7 +92,7 @@ export function useTasks(projectId: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [projectId, queryClient]);
+  }, [projectId, queryClient, supabase, uid]);
 
   // ── Create Task ─────────────────────────────────────────────────────────────
   const createTask = useMutation({

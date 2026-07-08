@@ -85,7 +85,7 @@ export function useGlobalActivity() {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [queryClient]);
+  }, [queryClient, supabase, uid]);
 
   return { entries, isLoading };
 }

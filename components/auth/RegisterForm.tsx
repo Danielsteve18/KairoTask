@@ -41,19 +41,17 @@ export function RegisterForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [passwordConfigured, setPasswordConfigured] = useState(false);
   const router = useRouter();
 
   const {
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
   });
-
-  const passwordSet = watch("password");
 
   async function onSubmit(values: RegisterFormValues) {
     setServerError(null);
@@ -95,6 +93,7 @@ export function RegisterForm() {
   function handlePasswordSave(password: string) {
     setValue("password", password, { shouldValidate: true });
     setValue("confirmPassword", password, { shouldValidate: true });
+    setPasswordConfigured(true);
   }
 
   if (successMessage) {
@@ -202,22 +201,22 @@ export function RegisterForm() {
               border transition-colors duration-200 outline-none cursor-pointer
               focus:border-[#22C55E] focus:ring-2 focus:ring-[#22C55E]/20
               ${
-                passwordSet
+                passwordConfigured
                   ? "bg-[#22C55E]/10 border-[#22C55E]/30 text-[#22C55E] hover:bg-[#22C55E]/20"
                   : "bg-black border-white/10 text-[#F8FAFC] hover:border-white/20"
               }
             `}
           >
             <span className="flex items-center gap-2">
-              {passwordSet ? (
+              {passwordConfigured ? (
                 <ShieldCheck className="w-4 h-4" />
               ) : (
                 <Lock className="w-4 h-4 text-[#94A3B8]" />
               )}
-              {passwordSet ? "Contraseña segura configurada" : "Configurar contraseña"}
+              {passwordConfigured ? "Contraseña segura configurada" : "Configurar contraseña"}
             </span>
             <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-white/5 text-[#94A3B8]">
-              {passwordSet ? "Editar" : "Requerido"}
+              {passwordConfigured ? "Editar" : "Requerido"}
             </span>
           </button>
           

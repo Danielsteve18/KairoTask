@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight, LayoutDashboard } from "lucide-react";
@@ -9,13 +9,13 @@ export default function ConfirmedPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isNew = searchParams.get("first") === "true";
-  const [onboardingDone, setOnboardingDone] = useState(false);
-  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
-  useEffect(() => {
-    setOnboardingDone(localStorage.getItem("onboarding_completed") === "true");
-    setOnboardingDismissed(localStorage.getItem("onboarding_dismissed") === "true");
-  }, []);
+  const [onboardingDone] = useState(() =>
+    typeof window !== "undefined" ? localStorage.getItem("onboarding_completed") === "true" : false
+  );
+  const [onboardingDismissed] = useState(() =>
+    typeof window !== "undefined" ? localStorage.getItem("onboarding_dismissed") === "true" : false
+  );
 
   const showTour = isNew || (!onboardingDone && !onboardingDismissed);
 

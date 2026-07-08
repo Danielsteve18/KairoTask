@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Skills de agente externas
+    ".claude/**",
+    ".agents/**",
+    // Generados por build
+    "public/sw.js",
+    "public/workbox-*.js",
   ]),
 ]);
 
