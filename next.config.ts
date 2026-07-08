@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import withPWA from "@ducanh2912/next-pwa";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin();
@@ -57,16 +56,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-const withPWAConfig = withPWA({
-  dest: "public",
-  register: true,
-  disable: process.env.NODE_ENV === "development",
-  scope: "/",
-  sw: "sw.js",
-  workboxOptions: {
-    skipWaiting: true,
-  },
-})(nextConfig);
-
-export default withNextIntl(withPWAConfig);
-
+export default withNextIntl(nextConfig);

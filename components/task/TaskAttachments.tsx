@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { motion } from "framer-motion";
 import {
-  Paperclip, FileText, Image, File, Trash2, Upload,
-  Loader2, Download,
+  Paperclip, FileText, File, Trash2, Upload,
+  Loader2, Download, FileImage,
 } from "lucide-react";
 import {
   useTaskAttachments,
@@ -22,7 +21,7 @@ function formatSize(bytes: number): string {
 }
 
 function fileIcon(mime: string) {
-  if (mime.startsWith("image/")) return <Image className="w-4 h-4" />;
+  if (mime.startsWith("image/")) return <FileImage className="w-4 h-4" />;
   if (mime.includes("pdf")) return <FileText className="w-4 h-4" />;
   return <File className="w-4 h-4" />;
 }

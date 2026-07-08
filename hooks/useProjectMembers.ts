@@ -88,7 +88,7 @@ export function useProjectMembers(projectId?: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [projectId, queryClient]);
+  }, [projectId, queryClient, supabase, uid]);
 
   // ── Fetch Workspace Team Directory (all members in user's projects) ────────
   const {

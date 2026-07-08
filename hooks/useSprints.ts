@@ -65,7 +65,7 @@ export function useSprints(projectId: string) {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [projectId, queryClient]);
+  }, [projectId, queryClient, supabase, uid]);
 
   const createSprint = useMutation({
     mutationFn: async (input: CreateSprintInput) => {

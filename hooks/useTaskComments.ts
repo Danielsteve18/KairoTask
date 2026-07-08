@@ -81,7 +81,7 @@ export function useTaskComments(taskId: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [taskId, queryClient]);
+  }, [taskId, queryClient, supabase, uid]);
 
   const addComment = useMutation({
     mutationFn: async (content: string) => {

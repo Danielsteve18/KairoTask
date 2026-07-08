@@ -141,7 +141,7 @@ export function useActivityLog(projectId: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [projectId, queryClient]);
+  }, [projectId, queryClient, supabase, uid]);
 
   return {
     entries,

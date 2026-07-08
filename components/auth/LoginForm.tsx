@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Zap } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
@@ -22,6 +22,12 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+function getUrlError(errorParam: string | null): string | null {
+  if (errorParam === "AuthError") return "Error al confirmar tu sesión. Intenta ingresar de nuevo.";
+  if (errorParam === "NoCode") return "Enlace de confirmación inválido. Solicita uno nuevo.";
+  return null;
+}
+
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -31,15 +37,7 @@ export function LoginForm() {
   const redirectTo = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
     ? rawRedirect
     : "/dashboard";
-
-  const errorParam = searchParams.get("error");
-  useEffect(() => {
-    if (errorParam === "AuthError") {
-      setServerError("Error al confirmar tu sesión. Intenta ingresar de nuevo.");
-    } else if (errorParam === "NoCode") {
-      setServerError("Enlace de confirmación inválido. Solicita uno nuevo.");
-    }
-  }, [errorParam]);
+  const urlError = getUrlError(searchParams.get("error"));
 
   const {
     register,
@@ -59,8 +57,6 @@ export function LoginForm() {
     });
 
     if (error) {
-      console.error("[login] signInWithPassword error:", error.message);
-      // Mensajes de error humanizados
       if (error.message.includes("Invalid login credentials")) {
         setServerError("Email o contraseña incorrectos. Intenta de nuevo.");
       } else if (error.message.includes("Email not confirmed")) {
@@ -77,15 +73,16 @@ export function LoginForm() {
     router.refresh();
   }
 
+  const errorMessage = serverError ?? urlError;
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
-      {/* Error de servidor */}
-      {serverError && (
+      {errorMessage && (
         <div
           role="alert"
           className="rounded-lg px-4 py-3 text-sm text-red-400 bg-red-400/10 border border-red-400/20"
         >
-          {serverError}
+          {errorMessage}
         </div>
       )}
 
@@ -199,6 +196,44 @@ export function LoginForm() {
         ) : (
           "Entrar al proyecto"
         )}
+      </button>
+
+      {/* Modo Prueba */}
+      <div className="relative my-2">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-white/10" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-black px-2 text-[10px] font-mono text-[#475569] uppercase">
+            o
+          </span>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={async () => {
+          const supabase = createClient();
+          const { error } = await supabase.auth.signInWithPassword({
+            email: "test@kairotask.dev",
+            password: "Test1234!",
+          });
+          if (!error) {
+            router.push("/dashboard");
+            router.refresh();
+          } else {
+            setServerError("Error al acceder en modo prueba: " + error.message);
+          }
+        }}
+        className="
+          w-full rounded-lg px-4 py-2.5 text-sm font-medium
+          border border-dashed border-white/10 text-[#94A3B8]
+          hover:border-[#22C55E]/40 hover:text-[#22C55E] hover:bg-[#22C55E]/5
+          transition-all duration-200 flex items-center justify-center gap-2
+          cursor-pointer
+        "
+      >
+        <Zap className="w-3.5 h-3.5" />
+        Modo Prueba (demo)
       </button>
     </form>
   );

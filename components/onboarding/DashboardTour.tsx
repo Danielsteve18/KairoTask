@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { driver } from "driver.js";
+import { driver, type DriveStep } from "driver.js";
 import "driver.js/dist/driver.css";
 
 const STEPS = [
@@ -71,7 +71,7 @@ export function DashboardTour() {
       const driverInstance = driver({
         showProgress: true,
         showButtons: ["next", "previous", "close"],
-        steps: STEPS as any,
+        steps: STEPS as DriveStep[],
         onDestroyed: () => {
           const wasClosed = localStorage.getItem("onboarding_dismissed") === "true";
           if (!wasClosed) {
