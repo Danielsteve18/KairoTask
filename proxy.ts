@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
-  const supabaseResponse = NextResponse.next({ request });
+  let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,9 +13,13 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
+          // Set cookies on both the request (for Server Actions) and the response.
+          // This is the pattern recommended by @supabase/ssr to ensure refreshed
+          // tokens are available to Server Actions in the same request cycle.
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
+          supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );
@@ -24,9 +28,13 @@ export async function proxy(request: NextRequest) {
     }
   );
 
+  // IMPORTANT: use getUser() not getSession().
+  // getUser() validates the JWT against Supabase's auth server and triggers a
+  // token refresh when needed. This ensures that subsequent Server Actions can
+  // successfully call supabase.auth.getUser() with a valid session.
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
 
@@ -36,7 +44,7 @@ export async function proxy(request: NextRequest) {
     pathname === route || pathname.startsWith(route + "/")
   );
 
-  if (isProtectedRoute && !session) {
+  if (isProtectedRoute && !user) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("redirectTo", pathname);
@@ -49,7 +57,7 @@ export async function proxy(request: NextRequest) {
     pathname === route || pathname.startsWith(route + "/")
   );
 
-  if (isAuthRoute && session) {
+  if (isAuthRoute && user) {
     const isUpdatePassword = pathname.startsWith("/auth/update-password");
     if (!isUpdatePassword) {
       const dashboardUrl = request.nextUrl.clone();

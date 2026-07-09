@@ -54,6 +54,7 @@
     "progress": "Progress",
     "tasks": "tasks",
     "members": "members",
+    "completed": "Completed",
     "noDescription": "No description",
     "activeProjects": "Active Projects",
     "totalTasks": "Total Tasks",

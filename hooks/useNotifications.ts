@@ -105,14 +105,16 @@ export function useRealtimeNotifications() {
 
   useEffect(() => {
     const supabase = createClient();
-    let channel: ReturnType<typeof supabase.channel>;
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    supabase.auth.getUser().then(({ data }) => {
-      const userId = data.user?.id;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (cancelled) return;
+      const userId = session?.user?.id;
       if (!userId) return;
 
-      channel = supabase
-        .channel("notifications_realtime")
+      channel = supabase.channel(`notifications_realtime_${userId}`);
+      channel
         .on(
           "postgres_changes",
           {
@@ -130,6 +132,7 @@ export function useRealtimeNotifications() {
     });
 
     return () => {
+      cancelled = true;
       if (channel) supabase.removeChannel(channel);
     };
   }, [queryClient]);

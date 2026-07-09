@@ -18,8 +18,7 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             );
           } catch {
-            // setAll puede fallar en Server Components de solo lectura.
-            // El middleware se encarga de refrescar la sesión.
+            // read-only Server Component — proxy.ts handles refresh
           }
         },
       },

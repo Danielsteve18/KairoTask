@@ -27,7 +27,6 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  turbopack: {},
   allowedDevOrigins: ["172.26.192.1", "localhost:3000"],
   async headers() {
     return [

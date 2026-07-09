@@ -57,11 +57,11 @@ const PALETTE_COLORS = [
 ];
 
 const VIEW_TABS = (tv: (key: string) => string): { id: ViewTab; label: string; icon: React.ElementType }[] => [
-  { id: "kanban", label: tv("kanban"), icon: Kanban },
-  { id: "sprints", label: tv("sprints"), icon: Sprout },
-  { id: "calendar", label: tv("calendar"), icon: Calendar },
-  { id: "gantt", label: tv("gantt"), icon: GanttChartSquare },
-  { id: "analytics", label: tv("analytics"), icon: BarChart3 },
+  { id: "kanban", label: tv("views.kanban"), icon: Kanban },
+  { id: "sprints", label: tv("views.sprints"), icon: Sprout },
+  { id: "calendar", label: tv("views.calendar"), icon: Calendar },
+  { id: "gantt", label: tv("views.gantt"), icon: GanttChartSquare },
+  { id: "analytics", label: tv("views.analytics"), icon: BarChart3 },
 ];
 
 export default function ProjectPage({
@@ -559,7 +559,7 @@ export default function ProjectPage({
                       </button>
                     </div>
 
-                    <div className="p-4 space-y-4">
+                    <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-mono uppercase tracking-widest" style={{ color: "var(--dash-text-muted)" }}>{t("name")}</label>
                         <input value={settingsName} onChange={(e) => setSettingsName(e.target.value)}
