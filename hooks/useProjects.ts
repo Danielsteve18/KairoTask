@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
-import { createProjectAction } from "@/lib/actions/projects";
+
 
 export interface Project {
   id: string;
@@ -118,7 +118,18 @@ export function useProjects() {
   // Create Project
   const createProject = useMutation({
     mutationFn: async (newProject: { name: string; description?: string; color: string }) => {
-      const data = await createProjectAction(newProject);
+      const res = await fetch("/api/projects/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newProject),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Error al crear el proyecto.");
+      }
+
       return data;
     },
     onSuccess: () => {
